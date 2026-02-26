@@ -75,6 +75,23 @@ class TodoService {
         }
     }
     
+    public function toggleCompleted($id) {
+        $id = intval($id);
+        $sql = "UPDATE todos SET completed = NOT completed WHERE id = $id";
+        
+        if ($this->conn->query($sql) === TRUE) {
+            return [
+                'success' => true,
+                'message' => 'Todo status bijgewerkt'
+            ];
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Error: ' . $this->conn->error
+            ];
+        }
+    }
+    
     public function __destruct() {
         $this->conn->close();
     }

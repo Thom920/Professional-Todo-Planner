@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH');
 
 require_once __DIR__ . '/../src/TodoService.php';
 
@@ -44,6 +44,19 @@ if ($method === 'GET') {
     
     if (isset($data['id'])) {
         $result = $todoService->deleteTodo($data['id']);
+        echo json_encode($result);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'ID is verplicht'
+        ]);
+    }
+    
+} elseif ($method === 'PATCH') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (isset($data['id'])) {
+        $result = $todoService->toggleCompleted($data['id']);
         echo json_encode($result);
     } else {
         echo json_encode([
