@@ -40,6 +40,41 @@ class TodoService {
         }
     }
     
+    public function updateTodo($id, $text) {
+        $id = intval($id);
+        $text = $this->conn->real_escape_string($text);
+        $sql = "UPDATE todos SET text = '$text' WHERE id = $id";
+        
+        if ($this->conn->query($sql) === TRUE) {
+            return [
+                'success' => true,
+                'message' => 'Todo bijgewerkt'
+            ];
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Error: ' . $this->conn->error
+            ];
+        }
+    }
+    
+    public function deleteTodo($id) {
+        $id = intval($id);
+        $sql = "DELETE FROM todos WHERE id = $id";
+        
+        if ($this->conn->query($sql) === TRUE) {
+            return [
+                'success' => true,
+                'message' => 'Todo verwijderd'
+            ];
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Error: ' . $this->conn->error
+            ];
+        }
+    }
+    
     public function __destruct() {
         $this->conn->close();
     }
