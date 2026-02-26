@@ -17,7 +17,9 @@
 4. Klik op "Go"
 
 ### 3. App gebruiken
-Open in browser: `http://localhost/school/github/p3-startproject-thom/public/`
+Open in browser: `http://localhost/[pad-naar-project]/public/`
+
+Bijvoorbeeld: `http://localhost/p3-startproject-thom/public/`
 
 ## Problemen?
 

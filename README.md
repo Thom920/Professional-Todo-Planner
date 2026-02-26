@@ -27,4 +27,4 @@ p3-startproject-thom/
 ## Gebruik
 1. Start XAMPP (Apache + MySQL)
 2. Importeer database: `config/setup_database.sql`
-3. Open: `http://localhost/school/github/p3-startproject-thom/public/`
+3. Open in browser: `http://localhost/[pad-naar-project]/public/`
