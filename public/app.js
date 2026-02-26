@@ -1,10 +1,26 @@
 const API_URL = 'api.php';
 let currentTodoId = null;
+let todosData = [];
+
+function loadColumnPreferences() {
+    const saved = localStorage.getItem('visibleColumns');
+    if (saved) {
+        return JSON.parse(saved);
+    }
+    return { priority: false };
+}
+
+function saveColumnPreferences() {
+    localStorage.setItem('visibleColumns', JSON.stringify(visibleColumns));
+}
+
+let visibleColumns = loadColumnPreferences();
 
 function loadTodos() {
     fetch(API_URL)
         .then(response => response.json())
         .then(todos => {
+            todosData = todos;
             displayTodos(todos);
         })
         .catch(error => {
@@ -13,24 +29,27 @@ function loadTodos() {
 }
 
 function displayTodos(todos) {
-    const todoList = document.getElementById('todoList');
+    const tableBody = document.getElementById('todoTableBody');
     const emptyMessage = document.getElementById('emptyMessage');
+    const table = document.getElementById('todoTable');
 
-    todoList.innerHTML = '';
+    tableBody.innerHTML = '';
 
     if (todos.length === 0) {
+        table.style.display = 'none';
         emptyMessage.style.display = 'block';
         return;
     } else {
+        table.style.display = 'table';
         emptyMessage.style.display = 'none';
     }
 
     todos.forEach(todo => {
-        // Container voor checkbox en todo item
-        const container = document.createElement('div');
-        container.className = 'todo-container';
+        const row = document.createElement('tr');
+        row.className = todo.completed == 1 ? 'completed' : '';
 
-        // Checkbox
+        const checkboxCell = document.createElement('td');
+        checkboxCell.className = 'col-checkbox';
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.className = 'todo-checkbox';
@@ -39,19 +58,87 @@ function displayTodos(todos) {
             e.stopPropagation();
             toggleTodo(todo.id);
         };
+        checkboxCell.appendChild(checkbox);
+        row.appendChild(checkboxCell);
 
-        const li = document.createElement('li');
-        li.className = 'todo-item';
-        if (todo.completed == 1) {
-            li.classList.add('completed');
-        }
-        li.textContent = todo.text;
-        li.onclick = () => openModal(todo);
+        const textCell = document.createElement('td');
+        textCell.className = 'col-text';
+        textCell.textContent = todo.text;
+        textCell.onclick = () => openModal(todo);
+        row.appendChild(textCell);
 
-        container.appendChild(checkbox);
-        container.appendChild(li);
-        todoList.appendChild(container);
+        const priorityCell = document.createElement('td');
+        priorityCell.className = 'col-priority';
+        priorityCell.style.display = visibleColumns.priority ? 'table-cell' : 'none';
+
+        const prioritySelect = createPriorityDropdown(todo.priority, todo.id);
+        priorityCell.appendChild(prioritySelect);
+        row.appendChild(priorityCell);
+
+        tableBody.appendChild(row);
     });
+}
+
+function createPriorityDropdown(currentPriority, todoId) {
+    const select = document.createElement('select');
+    select.className = 'priority-cell-select';
+
+    const options = [
+        { value: '', label: 'Geen' },
+        { value: 'laag', label: '🟢Laag' },
+        { value: 'medium', label: '🟡Medium' },
+        { value: 'hoog', label: '🔴Hoog' },
+        { value: 'ASAP', label: '⚠️ASAP' }
+    ];
+
+    options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.label;
+        if (currentPriority === opt.value) {
+            option.selected = true;
+        }
+        select.appendChild(option);
+    });
+
+    select.onclick = (e) => {
+        e.stopPropagation();
+    };
+
+    select.onchange = (e) => {
+        updateTodoPriority(todoId, e.target.value);
+    };
+
+    return select;
+}
+
+function updateTodoPriority(id, priority) {
+    const todo = todosData.find(t => t.id == id);
+    if (!todo) return;
+
+    fetch(API_URL, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id: id,
+            text: todo.text,
+            description: todo.description || '',
+            priority: priority || ''
+        })
+    })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                loadTodos();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error bij updaten priority:', error);
+        });
 }
 
 function addTodo(text) {
@@ -76,13 +163,13 @@ function addTodo(text) {
         });
 }
 
-function updateTodo(id, text, description) {
+function updateTodo(id, text, description, priority) {
     fetch(API_URL, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ id: id, text: text, description: description })
+        body: JSON.stringify({ id: id, text: text, description: description, priority: priority || '' })
     })
         .then(response => response.json())
         .then(result => {
@@ -152,10 +239,12 @@ function openModal(todo) {
     const modal = document.getElementById('todoModal');
     const modalInput = document.getElementById('modalTodoText');
     const modalDescription = document.getElementById('modalTodoDescription');
+    const modalPriority = document.getElementById('modalTodoPriority');
 
     currentTodoId = todo.id;
     modalInput.value = todo.text;
     modalDescription.value = todo.description || '';
+    modalPriority.value = todo.priority || '';
 
     modal.style.display = 'block';
 }
@@ -188,13 +277,14 @@ document.querySelector('.close').onclick = closeModal;
 document.getElementById('saveBtn').onclick = function () {
     const text = document.getElementById('modalTodoText').value.trim();
     const description = document.getElementById('modalTodoDescription').value.trim();
+    const priority = document.getElementById('modalTodoPriority').value;
 
     if (text === '') {
         alert('Todo tekst mag niet leeg zijn');
         return;
     }
 
-    updateTodo(currentTodoId, text, description);
+    updateTodo(currentTodoId, text, description, priority);
 };
 
 document.getElementById('deleteBtn').onclick = function () {
@@ -210,4 +300,35 @@ window.onclick = function (event) {
 
 window.addEventListener('load', function () {
     loadTodos();
+
+    const addColumnBtn = document.getElementById('addColumnBtn');
+    const columnDropdown = document.getElementById('columnDropdown');
+    const priorityToggle = document.getElementById('priorityToggle');
+
+    priorityToggle.checked = visibleColumns.priority;
+    toggleColumn('priority', visibleColumns.priority);
+
+    addColumnBtn.onclick = function (e) {
+        e.stopPropagation();
+        columnDropdown.style.display = columnDropdown.style.display === 'none' ? 'block' : 'none';
+    };
+
+    document.addEventListener('click', function (e) {
+        if (!addColumnBtn.contains(e.target) && !columnDropdown.contains(e.target)) {
+            columnDropdown.style.display = 'none';
+        }
+    });
+
+    priorityToggle.onchange = function () {
+        visibleColumns.priority = this.checked;
+        toggleColumn('priority', this.checked);
+        saveColumnPreferences();
+    };
 });
+
+function toggleColumn(columnName, show) {
+    const headerCells = document.querySelectorAll(`.col-${columnName}`);
+    headerCells.forEach(cell => {
+        cell.style.display = show ? 'table-cell' : 'none';
+    });
+}

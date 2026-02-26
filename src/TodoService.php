@@ -22,10 +22,16 @@ class TodoService {
         return $todos;
     }
     
-    public function createTodo($text, $description = '') {
+    public function createTodo($text, $description = '', $priority = null) {
         $text = $this->conn->real_escape_string($text);
         $description = $this->conn->real_escape_string($description);
-        $sql = "INSERT INTO todos (text, description) VALUES ('$text', '$description')";
+        $priority = $priority ? $this->conn->real_escape_string($priority) : null;
+        
+        if ($priority) {
+            $sql = "INSERT INTO todos (text, description, priority) VALUES ('$text', '$description', '$priority')";
+        } else {
+            $sql = "INSERT INTO todos (text, description) VALUES ('$text', '$description')";
+        }
         
         if ($this->conn->query($sql) === TRUE) {
             return [
@@ -41,11 +47,17 @@ class TodoService {
         }
     }
     
-    public function updateTodo($id, $text, $description = '') {
+    public function updateTodo($id, $text, $description = '', $priority = null) {
         $id = intval($id);
         $text = $this->conn->real_escape_string($text);
         $description = $this->conn->real_escape_string($description);
-        $sql = "UPDATE todos SET text = '$text', description = '$description' WHERE id = $id";
+        
+        if ($priority !== null) {
+            $priority = $this->conn->real_escape_string($priority);
+            $sql = "UPDATE todos SET text = '$text', description = '$description', priority = '$priority' WHERE id = $id";
+        } else {
+            $sql = "UPDATE todos SET text = '$text', description = '$description' WHERE id = $id";
+        }
         
         if ($this->conn->query($sql) === TRUE) {
             return [

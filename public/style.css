@@ -11,7 +11,7 @@ body {
 }
 
 .container {
-    max-width: 600px;
+    max-width: 900px;
     margin: 0 auto;
     background-color: white;
     padding: 30px;
@@ -20,13 +20,13 @@ body {
 }
 
 h1 {
-    color: #333;
+    color: #252525;
     margin-bottom: 30px;
     text-align: center;
 }
 
 h2 {
-    color: #555;
+    color: #494949;
     margin-bottom: 15px;
     font-size: 18px;
 }
@@ -34,7 +34,7 @@ h2 {
 .add-todo-form {
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #eee;
+    border-bottom: 2px solid #e0e0e0;
 }
 
 #todoForm {
@@ -45,19 +45,19 @@ h2 {
 #todoInput {
     flex: 1;
     padding: 10px;
-    border: 2px solid #ddd;
+    border: 2px solid #e0e0e0;
     border-radius: 5px;
     font-size: 16px;
 }
 
 #todoInput:focus {
     outline: none;
-    border-color: #4CAF50;
+    border-color: #00bb06;
 }
 
 button {
     padding: 10px 20px;
-    background-color: #4CAF50;
+    background-color: #00bb06;
     color: white;
     border: none;
     border-radius: 5px;
@@ -69,26 +69,147 @@ button:hover {
     background-color: #45a049;
 }
 
-.todo-list ul {
-    list-style: none;
+.todo-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
 }
 
-/* Container voor checkbox + todo item */
-.todo-container {
+.column-controls {
+    position: relative;
+}
+
+.add-column-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background-color: #00bb06;
+    color: white;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.3s ease;
 }
 
-/* Custom checkbox styling */
+.add-column-btn:hover {
+    background-color: #45a049;
+    transform: scale(1.1);
+}
+
+.column-dropdown {
+    position: absolute;
+    right: 0;
+    top: 45px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    padding: 8px 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f5f5f5;
+}
+
+.dropdown-item span {
+    font-size: 15px;
+    color: #333333;
+}
+
+.dropdown-item input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.todo-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.todo-table thead {
+    background-color: #f9f9f9;
+}
+
+.todo-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #555555;
+    border-bottom: 2px solid #e0e0e0;
+    font-size: 14px;
+}
+
+.todo-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+    height: 50px;
+}
+
+.todo-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.todo-table tbody tr:hover {
+    background-color: #f8f8f8;
+}
+
+.todo-table tbody tr.completed {
+    opacity: 0.6;
+}
+
+.todo-table tbody tr.completed .col-text {
+    color: #999;
+}
+
+.col-checkbox {
+    width: 40px;
+    text-align: center;
+}
+
+.col-text {
+    cursor: pointer;
+    color: #333333;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.col-text:hover {
+    color: #00bb06;
+}
+
+.col-priority {
+    width: 150px;
+}
+
 .todo-checkbox {
     appearance: none;
     -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
-    border: 2px solid #4CAF50;
-    border-radius: 6px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #00bb06;
+    border-radius: 5px;
     cursor: pointer;
     position: relative;
     transition: all 0.3s ease;
@@ -102,15 +223,15 @@ button:hover {
 }
 
 .todo-checkbox:checked {
-    background-color: #4CAF50;
-    border-color: #4CAF50;
+    background-color: #00bb06;
+    border-color: #00bb06;
 }
 
 .todo-checkbox:checked::after {
     content: '';
     position: absolute;
-    left: 6px;
-    top: 2px;
+    left: 5px;
+    top: 1px;
     width: 5px;
     height: 10px;
     border: solid white;
@@ -118,30 +239,46 @@ button:hover {
     transform: rotate(45deg);
 }
 
-.todo-item {
-    flex: 1;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    border-left: 4px solid #4CAF50;
+.priority-cell-select,
+.priority-select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    line-height: 1.4;
     cursor: pointer;
-    transition: all 0.3s ease;
+    background-color: white;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+    height: auto;
 }
 
-.todo-item:hover {
-    background-color: #e8e8e8;
-    transform: translateX(2px);
+.priority-cell-select {
+    padding: 4px 8px;
+    font-size: 13px;
 }
 
-.todo-item.completed {
-    opacity: 0.6;
-    color: #999;
+.priority-cell-select:hover,
+.priority-select:hover {
+    border-color: #00bb06;
 }
 
-#emptyMessage {
+.priority-cell-select:focus,
+.priority-select:focus {
+    outline: none;
+    border-color: #00bb06;
+}
+
+.priority-select {
+    margin-bottom: 20px;
+}
+
+.empty-message {
     color: #999;
     text-align: center;
-    padding: 20px;
+    padding: 40px 20px;
+    font-size: 16px;
 }
 
 /* Modal Styling */
@@ -161,7 +298,6 @@ button:hover {
     margin: 10% auto;
     padding: 30px;
     border-radius: 10px;
-    width: 90%;
     max-width: 500px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
@@ -186,7 +322,7 @@ button:hover {
 
 .modal-body label {
     display: block;
-    color: #555;
+    color: #555555;
     font-weight: 600;
     margin-bottom: 8px;
     font-size: 14px;
@@ -203,13 +339,13 @@ button:hover {
 
 #modalTodoText:focus {
     outline: none;
-    border-color: #4CAF50;
+    border-color: #00bb06;
 }
 
 #modalTodoDescription {
     width: 100%;
     padding: 12px;
-    border: 2px solid #ddd;
+    border: 2px solid #dddddd;
     border-radius: 5px;
     font-size: 16px;
     font-family: Arial, sans-serif;
@@ -220,20 +356,11 @@ button:hover {
 
 #modalTodoDescription:focus {
     outline: none;
-    border-color: #4CAF50;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.modal-actions button {
-    flex: 1;
+    border-color: #00bb06;
 }
 
 .btn-save {
-    background-color: #4CAF50;
+    background-color: #00bb06;
 }
 
 .btn-save:hover {
