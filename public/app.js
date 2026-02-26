@@ -76,13 +76,13 @@ function addTodo(text) {
         });
 }
 
-function updateTodo(id, text) {
+function updateTodo(id, text, description) {
     fetch(API_URL, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ id: id, text: text })
+        body: JSON.stringify({ id: id, text: text, description: description })
     })
         .then(response => response.json())
         .then(result => {
@@ -151,9 +151,11 @@ function toggleTodo(id) {
 function openModal(todo) {
     const modal = document.getElementById('todoModal');
     const modalInput = document.getElementById('modalTodoText');
+    const modalDescription = document.getElementById('modalTodoDescription');
 
     currentTodoId = todo.id;
     modalInput.value = todo.text;
+    modalDescription.value = todo.description || '';
 
     modal.style.display = 'block';
 }
@@ -185,13 +187,14 @@ document.querySelector('.close').onclick = closeModal;
 
 document.getElementById('saveBtn').onclick = function () {
     const text = document.getElementById('modalTodoText').value.trim();
+    const description = document.getElementById('modalTodoDescription').value.trim();
 
     if (text === '') {
         alert('Todo tekst mag niet leeg zijn');
         return;
     }
 
-    updateTodo(currentTodoId, text);
+    updateTodo(currentTodoId, text, description);
 };
 
 document.getElementById('deleteBtn').onclick = function () {
