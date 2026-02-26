@@ -1,0 +1,15 @@
+# .gitignore voor PHP project
+
+# IDE specifieke bestanden
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specifieke bestanden
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
