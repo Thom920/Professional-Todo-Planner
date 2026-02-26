@@ -21,9 +21,34 @@
         </div>
 
         <div class="todo-list">
-            <h2>Mijn Todo's</h2>
-            <ul id="todoList"></ul>
-            <p id="emptyMessage" style="display: none;">Geen todos. Voeg er een toe!</p>
+            <div class="todo-list-header">
+                <h2>Mijn Todo's</h2>
+                <div class="column-controls">
+                    <button id="addColumnBtn" class="add-column-btn" title="Kolom toevoegen">+</button>
+                    <div id="columnDropdown" class="column-dropdown" style="display: none;">
+                        <div class="dropdown-item" data-column="priority">
+                            <span>Prioriteit</span>
+                            <input type="checkbox" id="priorityToggle">
+                        </div>
+                        <!-- Komt later meer bij -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="todoTable" class="todo-table">
+                    <thead>
+                        <tr>
+                            <th class="col-checkbox"></th>
+                            <th class="col-text">Taak</th>
+                            <th class="col-priority" style="display: none;">Prioriteit</th>
+                            <!-- Komt later meer bij -->
+                        </tr>
+                    </thead>
+                    <tbody id="todoTableBody"></tbody>
+                </table>
+                <p id="emptyMessage" class="empty-message" style="display: none;">Geen todos. Voeg er een toe!</p>
+            </div>
         </div>
     </div>
 
@@ -35,10 +60,19 @@
             <div class="modal-body">
                 <label for="modalTodoText">Taak</label>
                 <input type="text" id="modalTodoText" maxlength="50">
-                
+
                 <label for="modalTodoDescription">Beschrijving</label>
                 <textarea id="modalTodoDescription" rows="4" placeholder="Voeg een beschrijving toe..."></textarea>
-                
+
+                <label for="modalTodoPriority">Prioriteit</label>
+                <select id="modalTodoPriority" class="priority-select">
+                    <option value="">Geen prioriteit</option>
+                    <option value="laag">🟢Laag</option>
+                    <option value="medium">🟡Medium</option>
+                    <option value="hoog">🔴Hoog</option>
+                    <option value="ASAP">⚠️ASAP</option>
+                </select>
+
                 <div class="modal-actions">
                     <button id="saveBtn" class="btn-save">Opslaan</button>
                     <button id="deleteBtn" class="btn-delete">Verwijderen</button>
