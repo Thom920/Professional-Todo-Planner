@@ -22,9 +22,10 @@ class TodoService {
         return $todos;
     }
     
-    public function createTodo($text) {
+    public function createTodo($text, $description = '') {
         $text = $this->conn->real_escape_string($text);
-        $sql = "INSERT INTO todos (text) VALUES ('$text')";
+        $description = $this->conn->real_escape_string($description);
+        $sql = "INSERT INTO todos (text, description) VALUES ('$text', '$description')";
         
         if ($this->conn->query($sql) === TRUE) {
             return [
@@ -40,10 +41,11 @@ class TodoService {
         }
     }
     
-    public function updateTodo($id, $text) {
+    public function updateTodo($id, $text, $description = '') {
         $id = intval($id);
         $text = $this->conn->real_escape_string($text);
-        $sql = "UPDATE todos SET text = '$text' WHERE id = $id";
+        $description = $this->conn->real_escape_string($description);
+        $sql = "UPDATE todos SET text = '$text', description = '$description' WHERE id = $id";
         
         if ($this->conn->query($sql) === TRUE) {
             return [

@@ -17,7 +17,8 @@ if ($method === 'GET') {
     $data = json_decode(file_get_contents('php://input'), true);
     
     if (isset($data['text']) && !empty(trim($data['text']))) {
-        $result = $todoService->createTodo(trim($data['text']));
+        $description = isset($data['description']) ? trim($data['description']) : '';
+        $result = $todoService->createTodo(trim($data['text']), $description);
         echo json_encode($result);
     } else {
         echo json_encode([
@@ -30,7 +31,8 @@ if ($method === 'GET') {
     $data = json_decode(file_get_contents('php://input'), true);
     
     if (isset($data['id']) && isset($data['text']) && !empty(trim($data['text']))) {
-        $result = $todoService->updateTodo($data['id'], trim($data['text']));
+        $description = isset($data['description']) ? trim($data['description']) : '';
+        $result = $todoService->updateTodo($data['id'], trim($data['text']), $description);
         echo json_encode($result);
     } else {
         echo json_encode([
