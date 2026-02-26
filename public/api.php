@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
 
 require_once __DIR__ . '/../src/TodoService.php';
 
@@ -25,6 +25,33 @@ if ($method === 'GET') {
             'message' => 'Text veld is verplicht'
         ]);
     }
+    
+} elseif ($method === 'PUT') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (isset($data['id']) && isset($data['text']) && !empty(trim($data['text']))) {
+        $result = $todoService->updateTodo($data['id'], trim($data['text']));
+        echo json_encode($result);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'ID en text zijn verplicht'
+        ]);
+    }
+    
+} elseif ($method === 'DELETE') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (isset($data['id'])) {
+        $result = $todoService->deleteTodo($data['id']);
+        echo json_encode($result);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'ID is verplicht'
+        ]);
+    }
+    
 } else {
     echo json_encode([
         'success' => false,

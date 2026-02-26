@@ -1,4 +1,5 @@
 const API_URL = 'api.php';
+let currentTodoId = null;
 
 function loadTodos() {
     fetch(API_URL)
@@ -27,6 +28,7 @@ function displayTodos(todos) {
     todos.forEach(todo => {
         const li = document.createElement('li');
         li.textContent = todo.text;
+        li.onclick = () => openModal(todo);
         todoList.appendChild(li);
     });
 }
@@ -53,6 +55,72 @@ function addTodo(text) {
         });
 }
 
+function updateTodo(id, text) {
+    fetch(API_URL, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: id, text: text })
+    })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                loadTodos();
+                closeModal();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error bij updaten todo:', error);
+            alert('Er ging iets mis bij het bijwerken van de todo');
+        });
+}
+
+function deleteTodo(id) {
+    if (!confirm('Weet je zeker dat je deze todo wilt verwijderen?')) {
+        return;
+    }
+
+    fetch(API_URL, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: id })
+    })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                loadTodos();
+                closeModal();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error bij verwijderen todo:', error);
+            alert('Er ging iets mis bij het verwijderen van de todo');
+        });
+}
+
+function openModal(todo) {
+    const modal = document.getElementById('todoModal');
+    const modalInput = document.getElementById('modalTodoText');
+    
+    currentTodoId = todo.id;
+    modalInput.value = todo.text;
+    
+    modal.style.display = 'block';
+}
+
+function closeModal() {
+    const modal = document.getElementById('todoModal');
+    modal.style.display = 'none';
+    currentTodoId = null;
+}
+
 document.getElementById('todoForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
@@ -68,6 +136,31 @@ document.getElementById('todoForm').addEventListener('submit', function (e) {
 
     input.value = '';
 });
+
+// Modal event listeners
+document.querySelector('.close').onclick = closeModal;
+
+document.getElementById('saveBtn').onclick = function() {
+    const text = document.getElementById('modalTodoText').value.trim();
+    
+    if (text === '') {
+        alert('Todo tekst mag niet leeg zijn');
+        return;
+    }
+    
+    updateTodo(currentTodoId, text);
+};
+
+document.getElementById('deleteBtn').onclick = function() {
+    deleteTodo(currentTodoId);
+};
+
+window.onclick = function(event) {
+    const modal = document.getElementById('todoModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+};
 
 window.addEventListener('load', function () {
     loadTodos();
