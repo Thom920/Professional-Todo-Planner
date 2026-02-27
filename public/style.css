@@ -207,6 +207,34 @@ button:hover {
     width: 120px;
 }
 
+.col-deadline {
+    width: 110px;
+}
+
+.deadline-display {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    border: 1px solid transparent;
+}
+
+.deadline-display:hover {
+    background-color: #e9ecef;
+    border-color: #ddd;
+}
+
+.deadline-display.today {
+    background-color: #fff3e0;
+    color: #f57c00;
+    font-weight: 600;
+    border-color: #ff9800;
+}
+
 .todo-checkbox {
     appearance: none;
     -webkit-appearance: none;
@@ -246,7 +274,9 @@ button:hover {
 .priority-cell-select,
 .priority-select,
 .time-cell-select,
-.time-select {
+.time-select,
+.deadline-cell-input,
+.deadline-input {
     width: 100%;
     padding: 8px 10px;
     border: 2px solid #ddd;
@@ -261,29 +291,90 @@ button:hover {
 }
 
 .priority-cell-select,
-.time-cell-select {
+.time-cell-select,
+.deadline-cell-input {
     padding: 4px 8px;
     font-size: 13px;
+}
+
+.deadline-cell-input {
+    width: 105px;
 }
 
 .priority-cell-select:hover,
 .priority-select:hover,
 .time-cell-select:hover,
-.time-select:hover {
+.time-select:hover,
+.deadline-cell-input:hover,
+.deadline-input:hover {
     border-color: #00bb06;
 }
 
 .priority-cell-select:focus,
 .priority-select:focus,
 .time-cell-select:focus,
-.time-select:focus {
+.time-select:focus,
+.deadline-cell-input:focus,
+.deadline-input:focus {
     outline: none;
     border-color: #00bb06;
 }
 
 .priority-select,
-.time-select {
+.time-select,
+.deadline-input {
     margin-bottom: 20px;
+}
+
+.modal-deadline-container {
+    margin-bottom: 20px;
+}
+
+.modal-deadline-display {
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 15px;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    border: 2px solid #ddd;
+    min-width: 120px;
+    text-align: center;
+}
+
+.modal-deadline-display:hover {
+    background-color: #e9ecef;
+    border-color: #00bb06;
+}
+
+.modal-deadline-display.today {
+    background-color: #fff3e0;
+    color: #f57c00;
+    font-weight: 600;
+    border-color: #ff9800;
+}
+
+.modal-deadline-input {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.modal-deadline-input:focus {
+    outline: none;
+    border-color: #00bb06;
+}
+
+.deadline-cell-input.today {
+    border-color: #ff9800;
+    background-color: #fff3e0;
+    font-weight: 600;
+    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
 }
 
 .empty-message {
@@ -303,14 +394,20 @@ button:hover {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal[style*="display: block"] {
+    display: flex !important;
 }
 
 .modal-content {
     background-color: white;
-    margin: 10% auto;
     padding: 30px;
     border-radius: 10px;
     max-width: 500px;
+    width: 90%;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -404,6 +501,7 @@ button:hover {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -426,6 +524,7 @@ button:hover {
         transform: translateY(-50px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;

@@ -34,7 +34,10 @@
                             <span>Tijdsduur</span>
                             <input type="checkbox" id="timeToggle">
                         </div>
-                        <!-- Komt later meer bij -->
+                        <div class="dropdown-item" data-column="deadline">
+                            <span>Deadline</span>
+                            <input type="checkbox" id="deadlineToggle">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -47,12 +50,13 @@
                             <th class="col-text">Taak</th>
                             <th class="col-priority" style="display: none;">Prioriteit</th>
                             <th class="col-time" style="display: none;">Tijdsduur</th>
-                            <!-- Komt later meer bij -->
+                            <th class="col-deadline" style="display: none;">Deadline</th>
                         </tr>
                     </thead>
                     <tbody id="todoTableBody"></tbody>
                 </table>
-                <p id="emptyMessage" class="empty-message" style="display: none;">Geen todos. Voeg er een toe!</p>
+                <p id="emptyMessage" class="empty-message" style="display: none;">Nog geen todo's, voeg er
+                    eerst een toe.</p>
             </div>
         </div>
     </div>
@@ -90,6 +94,11 @@
                     <option value="5+ uur"> 5+ uur</option>
                 </select>
 
+                <label for="modalTodoDeadline">Deadline</label>
+                <div id="modalDeadlineContainer" class="modal-deadline-container">
+                    <span id="modalDeadlineDisplay" class="modal-deadline-display">-</span>
+                </div>
+
                 <div class="modal-actions">
                     <button id="saveBtn" class="btn-save">Opslaan</button>
                     <button id="deleteBtn" class="btn-delete">Verwijderen</button>
@@ -105,8 +114,8 @@
             <p>Je todo app is geüpdatet met coole nieuwe features:</p>
             <ul>
                 <li> <strong>Tijdsduur toevoegen</strong> - Hoelang duurt je taak?</li>
-                <li><strong>Tijdsduur kolom</strong> - Zie in 1 oogopslag hoelang taken duren</li>
-                <li><strong>Nog mooier design</strong> - Alles ziet er frisser uit</li>
+                <li><strong>Deadline instellen</strong> - Wanneer moet het af?</li>
+                <li><strong>Deadline waarschuwing</strong> - Zie direct welke taken vandaag af moeten.</li>
             </ul>
             <button id="updatePopupBtn" class="update-popup-btn">Heel Cool, lekker bezig Thom! 👍</button>
         </div>
