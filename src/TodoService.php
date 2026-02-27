@@ -22,11 +22,12 @@ class TodoService {
         return $todos;
     }
     
-    public function createTodo($text, $description = '', $priority = null, $time = null) {
+    public function createTodo($text, $description = '', $priority = null, $time = null, $deadline = null) {
         $text = $this->conn->real_escape_string($text);
         $description = $this->conn->real_escape_string($description);
         $priority = $priority ? $this->conn->real_escape_string($priority) : null;
         $time = $time ? $this->conn->real_escape_string($time) : null;
+        $deadline = $deadline ? $this->conn->real_escape_string($deadline) : null;
         
         $sql = "INSERT INTO todos (text, description";
         $values = "VALUES ('$text', '$description'";
@@ -39,6 +40,11 @@ class TodoService {
         if ($time) {
             $sql .= ", time";
             $values .= ", '$time'";
+        }
+        
+        if ($deadline) {
+            $sql .= ", deadline";
+            $values .= ", '$deadline'";
         }
         
         $sql .= ") " . $values . ")";
@@ -57,7 +63,7 @@ class TodoService {
         }
     }
     
-    public function updateTodo($id, $text, $description = '', $priority = null, $time = null) {
+    public function updateTodo($id, $text, $description = '', $priority = null, $time = null, $deadline = null) {
         $id = intval($id);
         $text = $this->conn->real_escape_string($text);
         $description = $this->conn->real_escape_string($description);
@@ -72,6 +78,11 @@ class TodoService {
         if ($time !== null) {
             $time = $this->conn->real_escape_string($time);
             $sql .= ", time = '$time'";
+        }
+        
+        if ($deadline !== null) {
+            $deadline = $this->conn->real_escape_string($deadline);
+            $sql .= ", deadline = '$deadline'";
         }
         
         $sql .= " WHERE id = $id";

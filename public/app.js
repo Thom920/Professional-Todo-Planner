@@ -7,7 +7,7 @@ function loadColumnPreferences() {
     if (saved) {
         return JSON.parse(saved);
     }
-    return { priority: false, time: false };
+    return { priority: false, time: false, deadline: false };
 }
 
 function saveColumnPreferences() {
@@ -15,6 +15,24 @@ function saveColumnPreferences() {
 }
 
 let visibleColumns = loadColumnPreferences();
+
+// Kijkt of datum vandaan is
+function isToday(dateString) {
+    if (!dateString) return false;
+    const today = new Date();
+    const date = new Date(dateString);
+    return date.toDateString() === today.toDateString();
+}
+
+// Format datum van YYYY-MM-DD naar "D Mmm" (bijv. "5 okt")
+function formatDeadline(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    return `${day} ${month}`;
+}
 
 function loadTodos() {
     fetch(API_URL)
@@ -82,6 +100,14 @@ function displayTodos(todos) {
         const timeInput = createTimeInput(todo.time, todo.id);
         timeCell.appendChild(timeInput);
         row.appendChild(timeCell);
+
+        const deadlineCell = document.createElement('td');
+        deadlineCell.className = 'col-deadline';
+        deadlineCell.style.display = visibleColumns.deadline ? 'table-cell' : 'none';
+
+        const deadlineDisplay = createDeadlineInput(todo.deadline, todo.id);
+        deadlineCell.appendChild(deadlineDisplay);
+        row.appendChild(deadlineCell);
 
         tableBody.appendChild(row);
     });
@@ -156,6 +182,88 @@ function createTimeInput(currentTime, todoId) {
     return select;
 }
 
+function createDeadlineInput(currentDeadline, todoId) {
+    const container = document.createElement('div');
+    container.style.display = 'inline-block';
+
+    const showDisplay = (deadline) => {
+        const display = document.createElement('span');
+        display.className = 'deadline-display';
+
+        if (deadline) {
+            display.textContent = formatDeadline(deadline);
+            if (isToday(deadline)) {
+                display.classList.add('today');
+            }
+        } else {
+            display.textContent = '-';
+            display.style.color = '#ccc';
+        }
+
+        display.onclick = (e) => {
+            e.stopPropagation();
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.className = 'deadline-cell-input';
+            input.value = deadline || '';
+
+            input.onchange = (e) => {
+                updateTodoDeadline(todoId, e.target.value);
+            };
+
+            input.onblur = () => {
+                const newDeadline = input.value;
+                container.innerHTML = '';
+                container.appendChild(showDisplay(newDeadline));
+            };
+
+            container.innerHTML = '';
+            container.appendChild(input);
+            input.focus();
+            try {
+                input.showPicker();
+            } catch (e) {
+            }
+        };
+
+        return display;
+    };
+
+    container.appendChild(showDisplay(currentDeadline));
+    return container;
+}
+
+function updateTodoDeadline(id, deadline) {
+    const todo = todosData.find(t => t.id == id);
+    if (!todo) return;
+
+    fetch(API_URL, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id: id,
+            text: todo.text,
+            description: todo.description || '',
+            priority: todo.priority || '',
+            time: todo.time || '',
+            deadline: deadline || ''
+        })
+    })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                loadTodos();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error bij updaten deadline:', error);
+        });
+}
+
 function updateTodoTime(id, time) {
     const todo = todosData.find(t => t.id == id);
     if (!todo) return;
@@ -170,7 +278,8 @@ function updateTodoTime(id, time) {
             text: todo.text,
             description: todo.description || '',
             priority: todo.priority || '',
-            time: time || ''
+            time: time || '',
+            deadline: todo.deadline || ''
         })
     })
         .then(response => response.json())
@@ -200,7 +309,8 @@ function updateTodoPriority(id, priority) {
             text: todo.text,
             description: todo.description || '',
             priority: priority || '',
-            time: todo.time || ''
+            time: todo.time || '',
+            deadline: todo.deadline || ''
         })
     })
         .then(response => response.json())
@@ -238,13 +348,13 @@ function addTodo(text) {
         });
 }
 
-function updateTodo(id, text, description, priority, time) {
+function updateTodo(id, text, description, priority, time, deadline) {
     fetch(API_URL, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ id: id, text: text, description: description, priority: priority || '', time: time || '' })
+        body: JSON.stringify({ id: id, text: text, description: description, priority: priority || '', time: time || '', deadline: deadline || '' })
     })
         .then(response => response.json())
         .then(result => {
@@ -316,12 +426,20 @@ function openModal(todo) {
     const modalDescription = document.getElementById('modalTodoDescription');
     const modalPriority = document.getElementById('modalTodoPriority');
     const modalTime = document.getElementById('modalTodoTime');
+    const modalDeadlineDisplay = document.getElementById('modalDeadlineDisplay');
+    const modalDeadlineContainer = document.getElementById('modalDeadlineContainer');
 
     currentTodoId = todo.id;
     modalInput.value = todo.text;
     modalDescription.value = todo.description || '';
     modalPriority.value = todo.priority || '';
     modalTime.value = todo.time || '';
+
+    modalDeadlineContainer.dataset.deadline = todo.deadline || '';
+
+    updateModalDeadlineDisplay(todo.deadline);
+
+    setupModalDeadlineClick();
 
     modal.style.display = 'block';
 }
@@ -330,6 +448,56 @@ function closeModal() {
     const modal = document.getElementById('todoModal');
     modal.style.display = 'none';
     currentTodoId = null;
+}
+
+function updateModalDeadlineDisplay(deadline) {
+    const display = document.getElementById('modalDeadlineDisplay');
+    display.className = 'modal-deadline-display';
+
+    if (deadline) {
+        display.textContent = formatDeadline(deadline);
+        if (isToday(deadline)) {
+            display.classList.add('today');
+        }
+    } else {
+        display.textContent = 'Geen deadline';
+        display.style.color = '#999';
+    }
+}
+
+function setupModalDeadlineClick() {
+    const container = document.getElementById('modalDeadlineContainer');
+    const display = document.getElementById('modalDeadlineDisplay');
+
+    display.onclick = function () {
+        const currentDeadline = container.dataset.deadline || '';
+        const input = document.createElement('input');
+        input.type = 'date';
+        input.className = 'modal-deadline-input';
+        input.value = currentDeadline;
+
+        input.onchange = function () {
+            container.dataset.deadline = input.value;
+            updateModalDeadlineDisplay(input.value);
+            container.innerHTML = '';
+            container.appendChild(display);
+            setupModalDeadlineClick();
+        };
+
+        input.onblur = function () {
+            container.innerHTML = '';
+            container.appendChild(display);
+            setupModalDeadlineClick();
+        };
+
+        container.innerHTML = '';
+        container.appendChild(input);
+        input.focus();
+        try {
+            input.showPicker();
+        } catch (e) {
+        }
+    };
 }
 
 document.getElementById('todoForm').addEventListener('submit', function (e) {
@@ -356,13 +524,14 @@ document.getElementById('saveBtn').onclick = function () {
     const description = document.getElementById('modalTodoDescription').value.trim();
     const priority = document.getElementById('modalTodoPriority').value;
     const time = document.getElementById('modalTodoTime').value;
+    const deadline = document.getElementById('modalDeadlineContainer').dataset.deadline || '';
 
     if (text === '') {
         alert('Todo tekst mag niet leeg zijn');
         return;
     }
 
-    updateTodo(currentTodoId, text, description, priority, time);
+    updateTodo(currentTodoId, text, description, priority, time, deadline);
 };
 
 document.getElementById('deleteBtn').onclick = function () {
@@ -376,6 +545,16 @@ window.onclick = function (event) {
     }
 };
 
+// ESC key om modal te sluiten
+window.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' || event.key === 'Esc') {
+        const modal = document.getElementById('todoModal');
+        if (modal.style.display === 'block') {
+            closeModal();
+        }
+    }
+});
+
 window.addEventListener('load', function () {
     loadTodos();
 
@@ -383,11 +562,14 @@ window.addEventListener('load', function () {
     const columnDropdown = document.getElementById('columnDropdown');
     const priorityToggle = document.getElementById('priorityToggle');
     const timeToggle = document.getElementById('timeToggle');
+    const deadlineToggle = document.getElementById('deadlineToggle');
 
     priorityToggle.checked = visibleColumns.priority;
     timeToggle.checked = visibleColumns.time;
+    deadlineToggle.checked = visibleColumns.deadline;
     toggleColumn('priority', visibleColumns.priority);
     toggleColumn('time', visibleColumns.time);
+    toggleColumn('deadline', visibleColumns.deadline);
 
     addColumnBtn.onclick = function (e) {
         e.stopPropagation();
@@ -409,6 +591,12 @@ window.addEventListener('load', function () {
     timeToggle.onchange = function () {
         visibleColumns.time = this.checked;
         toggleColumn('time', this.checked);
+        saveColumnPreferences();
+    };
+
+    deadlineToggle.onchange = function () {
+        visibleColumns.deadline = this.checked;
+        toggleColumn('deadline', this.checked);
         saveColumnPreferences();
     };
 
