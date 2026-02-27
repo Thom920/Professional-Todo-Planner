@@ -111,6 +111,7 @@ button:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 200px;
     padding: 8px 0;
+    z-index: 100;
 }
 
 .dropdown-item {
@@ -158,6 +159,73 @@ button:hover {
     color: #555555;
     border-bottom: 2px solid #e0e0e0;
     font-size: 14px;
+    position: relative;
+}
+
+.todo-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.todo-table th.sortable:hover {
+    background-color: transparent;
+    color: #00bb06;
+}
+
+.sort-arrow {
+    font-size: 12px;
+    margin-left: 4px;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+}
+
+.sortable.sort-asc .sort-arrow::after {
+    content: '▲';
+    opacity: 1;
+    color: #00bb06;
+}
+
+.sortable.sort-desc .sort-arrow::after {
+    content: '▼';
+    opacity: 1;
+    color: #00bb06;
+}
+
+/* Toggle completed button */
+.toggle-completed-btn {
+    background: white;
+    border: 2px solid #00bb06;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.toggle-completed-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 187, 6, 0.3);
+}
+
+.toggle-completed-btn[data-state="hide"] {
+    background-color: #fff;
+    border-color: #ddd;
+}
+
+.toggle-icon {
+    font-size: 18px;
+    color: #00bb06;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.toggle-completed-btn[data-state="hide"] .toggle-icon {
+    color: #999;
 }
 
 .todo-table td {
@@ -169,6 +237,7 @@ button:hover {
 
 .todo-table tbody tr {
     transition: background-color 0.2s ease;
+    position: relative;
 }
 
 .todo-table tbody tr:hover {

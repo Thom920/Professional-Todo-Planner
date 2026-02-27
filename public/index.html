@@ -28,15 +28,15 @@
                     <div id="columnDropdown" class="column-dropdown" style="display: none;">
                         <div class="dropdown-item" data-column="priority">
                             <span>Prioriteit</span>
-                            <input type="checkbox" id="priorityToggle">
+                            <input type="checkbox" id="priorityToggle" checked>
                         </div>
                         <div class="dropdown-item" data-column="time">
                             <span>Tijdsduur</span>
-                            <input type="checkbox" id="timeToggle">
+                            <input type="checkbox" id="timeToggle" checked>
                         </div>
                         <div class="dropdown-item" data-column="deadline">
                             <span>Deadline</span>
-                            <input type="checkbox" id="deadlineToggle">
+                            <input type="checkbox" id="deadlineToggle" checked>
                         </div>
                     </div>
                 </div>
@@ -47,10 +47,18 @@
                     <thead>
                         <tr>
                             <th class="col-checkbox"></th>
-                            <th class="col-text">Taak</th>
-                            <th class="col-priority" style="display: none;">Prioriteit</th>
-                            <th class="col-time" style="display: none;">Tijdsduur</th>
-                            <th class="col-deadline" style="display: none;">Deadline</th>
+                            <th class="col-text sortable" data-sort="text">
+                                Taak <span class="sort-arrow"></span>
+                            </th>
+                            <th class="col-priority sortable" data-sort="priority">
+                                Prioriteit <span class="sort-arrow"></span>
+                            </th>
+                            <th class="col-time sortable" data-sort="time">
+                                Tijdsduur <span class="sort-arrow"></span>
+                            </th>
+                            <th class="col-deadline sortable" data-sort="deadline">
+                                Deadline <span class="sort-arrow"></span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="todoTableBody"></tbody>

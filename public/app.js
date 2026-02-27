@@ -7,7 +7,7 @@ function loadColumnPreferences() {
     if (saved) {
         return JSON.parse(saved);
     }
-    return { priority: false, time: false, deadline: false };
+    return { priority: true, time: true, deadline: true };
 }
 
 function saveColumnPreferences() {
@@ -15,6 +15,8 @@ function saveColumnPreferences() {
 }
 
 let visibleColumns = loadColumnPreferences();
+
+let currentSort = { column: null, direction: 'none' }; // 'asc', 'desc', 'none'
 
 // Kijkt of datum vandaan is
 function isToday(dateString) {
@@ -26,12 +28,82 @@ function isToday(dateString) {
 
 // Format datum van YYYY-MM-DD naar "D Mmm" (bijv. "5 okt")
 function formatDeadline(dateString) {
-    if (!dateString) return '';
+    if (!dateString || dateString === '' || dateString === null || dateString === 'undefined') return '-';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '-';
     const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
     const day = date.getDate();
     const month = months[date.getMonth()];
     return `${day} ${month}`;
+}
+
+function sortTodos(todos, column, direction) {
+    if (!column || direction === 'none' || direction === null) return todos;
+
+    const sorted = [...todos];
+    const multiplier = direction === 'asc' ? 1 : -1;
+
+    sorted.sort((a, b) => {
+        let valA, valB;
+
+        switch (column) {
+            case 'text':
+                valA = (a.text || '').toLowerCase();
+                valB = (b.text || '').toLowerCase();
+                return valA.localeCompare(valB) * multiplier;
+
+            case 'priority':
+                const priorityOrder = { '': 0, 'laag': 1, 'medium': 2, 'hoog': 3, 'ASAP': 4 };
+                valA = priorityOrder[a.priority || ''];
+                valB = priorityOrder[b.priority || ''];
+                return (valA - valB) * multiplier;
+
+            case 'time':
+                const timeOrder = { '': 0, '10 min': 10, '30 min': 30, '1 uur': 60, '2 uur': 120, '3 uur': 180, '4 uur': 240, '5+ uur': 300 };
+                valA = timeOrder[a.time || ''];
+                valB = timeOrder[b.time || ''];
+                return (valA - valB) * multiplier;
+
+            case 'deadline':
+                valA = a.deadline ? new Date(a.deadline).getTime() : 0;
+                valB = b.deadline ? new Date(b.deadline).getTime() : 0;
+                if (valA === 0 && valB === 0) return 0;
+                if (valA === 0) return 1; // Geen deadline komt achteraan
+                if (valB === 0) return -1;
+                return (valA - valB) * multiplier;
+
+            default:
+                return 0;
+        }
+    });
+
+    return sorted;
+}
+
+function filterByCompleted(todos) {
+    return todos;
+}
+
+function applySortingAndFiltering() {
+    let filtered = filterByCompleted(todosData);
+    let sorted = sortTodos(filtered, currentSort.column, currentSort.direction);
+    displayTodos(sorted);
+    updateSortUI();
+}
+
+function updateSortUI() {
+    // Verwijder alle sort classes
+    document.querySelectorAll('.sortable').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+    });
+
+    // Voeg juiste class toe aan actieve kolom
+    if (currentSort.column && currentSort.direction !== 'none') {
+        const activeHeader = document.querySelector(`[data-sort="${currentSort.column}"]`);
+        if (activeHeader) {
+            activeHeader.classList.add(`sort-${currentSort.direction}`);
+        }
+    }
 }
 
 function loadTodos() {
@@ -39,7 +111,7 @@ function loadTodos() {
         .then(response => response.json())
         .then(todos => {
             todosData = todos;
-            displayTodos(todos);
+            applySortingAndFiltering();
         })
         .catch(error => {
             console.error('Error bij laden todos:', error);
@@ -53,7 +125,7 @@ function displayTodos(todos) {
 
     tableBody.innerHTML = '';
 
-    if (todos.length === 0) {
+    if (todosData.length === 0) {
         table.style.display = 'none';
         emptyMessage.style.display = 'block';
         return;
@@ -599,6 +671,29 @@ window.addEventListener('load', function () {
         toggleColumn('deadline', this.checked);
         saveColumnPreferences();
     };
+
+    document.querySelectorAll('.sortable').forEach(header => {
+        header.addEventListener('click', function () {
+            const column = this.dataset.sort;
+
+            // Gaat door: none -> asc -> desc -> none...
+            if (currentSort.column === column) {
+                if (currentSort.direction === 'none' || currentSort.direction === null) {
+                    currentSort.direction = 'asc';
+                } else if (currentSort.direction === 'asc') {
+                    currentSort.direction = 'desc';
+                } else {
+                    currentSort.direction = 'none';
+                    currentSort.column = null;
+                }
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            applySortingAndFiltering();
+        });
+    });
 
     showUpdatePopupIfNeeded();
 });
