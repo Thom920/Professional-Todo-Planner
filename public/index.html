@@ -30,6 +30,10 @@
                             <span>Prioriteit</span>
                             <input type="checkbox" id="priorityToggle">
                         </div>
+                        <div class="dropdown-item" data-column="time">
+                            <span>Tijdsduur</span>
+                            <input type="checkbox" id="timeToggle">
+                        </div>
                         <!-- Komt later meer bij -->
                     </div>
                 </div>
@@ -42,6 +46,7 @@
                             <th class="col-checkbox"></th>
                             <th class="col-text">Taak</th>
                             <th class="col-priority" style="display: none;">Prioriteit</th>
+                            <th class="col-time" style="display: none;">Tijdsduur</th>
                             <!-- Komt later meer bij -->
                         </tr>
                     </thead>
@@ -73,11 +78,37 @@
                     <option value="ASAP">⚠️ASAP</option>
                 </select>
 
+                <label for="modalTodoTime">Tijdsduur</label>
+                <select id="modalTodoTime" class="time-select">
+                    <option value="">Geen tijdsduur</option>
+                    <option value="10 min"> 10 min</option>
+                    <option value="30 min"> 30 min</option>
+                    <option value="1 uur"> 1 uur</option>
+                    <option value="2 uur"> 2 uur</option>
+                    <option value="3 uur"> 3 uur</option>
+                    <option value="4 uur"> 4 uur</option>
+                    <option value="5+ uur"> 5+ uur</option>
+                </select>
+
                 <div class="modal-actions">
                     <button id="saveBtn" class="btn-save">Opslaan</button>
                     <button id="deleteBtn" class="btn-delete">Verwijderen</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="updatePopup" class="update-popup" style="display: none;">
+        <div class="update-popup-content">
+            <span class="update-close">&times;</span>
+            <h2>🎉 Nieuwe Update!</h2>
+            <p>Je todo app is geüpdatet met coole nieuwe features:</p>
+            <ul>
+                <li> <strong>Tijdsduur toevoegen</strong> - Hoelang duurt je taak?</li>
+                <li><strong>Tijdsduur kolom</strong> - Zie in 1 oogopslag hoelang taken duren</li>
+                <li><strong>Nog mooier design</strong> - Alles ziet er frisser uit</li>
+            </ul>
+            <button id="updatePopupBtn" class="update-popup-btn">Heel Cool, lekker bezig Thom! 👍</button>
         </div>
     </div>
 
