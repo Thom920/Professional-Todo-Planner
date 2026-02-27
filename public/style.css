@@ -203,6 +203,10 @@ button:hover {
     width: 150px;
 }
 
+.col-time {
+    width: 120px;
+}
+
 .todo-checkbox {
     appearance: none;
     -webkit-appearance: none;
@@ -240,7 +244,9 @@ button:hover {
 }
 
 .priority-cell-select,
-.priority-select {
+.priority-select,
+.time-cell-select,
+.time-select {
     width: 100%;
     padding: 8px 10px;
     border: 2px solid #ddd;
@@ -254,23 +260,29 @@ button:hover {
     height: auto;
 }
 
-.priority-cell-select {
+.priority-cell-select,
+.time-cell-select {
     padding: 4px 8px;
     font-size: 13px;
 }
 
 .priority-cell-select:hover,
-.priority-select:hover {
+.priority-select:hover,
+.time-cell-select:hover,
+.time-select:hover {
     border-color: #00bb06;
 }
 
 .priority-cell-select:focus,
-.priority-select:focus {
+.priority-select:focus,
+.time-cell-select:focus,
+.time-select:focus {
     outline: none;
     border-color: #00bb06;
 }
 
-.priority-select {
+.priority-select,
+.time-select {
     margin-bottom: 20px;
 }
 
@@ -373,4 +385,115 @@ button:hover {
 
 .btn-delete:hover {
     background-color: #da190b;
+}
+
+/* Update Popup Styling */
+.update-popup {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.update-popup-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin: 8% auto;
+    padding: 35px;
+    border-radius: 15px;
+    max-width: 450px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    animation: slideDown 0.4s ease;
+    position: relative;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.update-close {
+    color: white;
+    float: right;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 20px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.update-close:hover {
+    opacity: 1;
+}
+
+.update-popup-content h2 {
+    color: white;
+    margin-bottom: 20px;
+    font-size: 26px;
+    text-align: center;
+}
+
+.update-popup-content p {
+    font-size: 16px;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.update-popup-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.update-popup-content ul li {
+    padding: 10px 0;
+    font-size: 15px;
+    line-height: 1.6;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.update-popup-content ul li:last-child {
+    border-bottom: none;
+}
+
+.update-popup-btn {
+    background-color: white;
+    color: #667eea;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: block;
+    margin: 25px auto 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.update-popup-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    background-color: #f0f0f0;
 }

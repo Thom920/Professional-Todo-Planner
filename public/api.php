@@ -19,7 +19,8 @@ if ($method === 'GET') {
     if (isset($data['text']) && !empty(trim($data['text']))) {
         $description = isset($data['description']) ? trim($data['description']) : '';
         $priority = isset($data['priority']) && !empty($data['priority']) ? trim($data['priority']) : null;
-        $result = $todoService->createTodo(trim($data['text']), $description, $priority);
+        $time = isset($data['time']) && !empty($data['time']) ? trim($data['time']) : null;
+        $result = $todoService->createTodo(trim($data['text']), $description, $priority, $time);
         echo json_encode($result);
     } else {
         echo json_encode([
@@ -34,7 +35,8 @@ if ($method === 'GET') {
     if (isset($data['id']) && isset($data['text']) && !empty(trim($data['text']))) {
         $description = isset($data['description']) ? trim($data['description']) : '';
         $priority = isset($data['priority']) ? trim($data['priority']) : null;
-        $result = $todoService->updateTodo($data['id'], trim($data['text']), $description, $priority);
+        $time = isset($data['time']) ? trim($data['time']) : null;
+        $result = $todoService->updateTodo($data['id'], trim($data['text']), $description, $priority, $time);
         echo json_encode($result);
     } else {
         echo json_encode([

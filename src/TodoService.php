@@ -22,16 +22,26 @@ class TodoService {
         return $todos;
     }
     
-    public function createTodo($text, $description = '', $priority = null) {
+    public function createTodo($text, $description = '', $priority = null, $time = null) {
         $text = $this->conn->real_escape_string($text);
         $description = $this->conn->real_escape_string($description);
         $priority = $priority ? $this->conn->real_escape_string($priority) : null;
+        $time = $time ? $this->conn->real_escape_string($time) : null;
+        
+        $sql = "INSERT INTO todos (text, description";
+        $values = "VALUES ('$text', '$description'";
         
         if ($priority) {
-            $sql = "INSERT INTO todos (text, description, priority) VALUES ('$text', '$description', '$priority')";
-        } else {
-            $sql = "INSERT INTO todos (text, description) VALUES ('$text', '$description')";
+            $sql .= ", priority";
+            $values .= ", '$priority'";
         }
+        
+        if ($time) {
+            $sql .= ", time";
+            $values .= ", '$time'";
+        }
+        
+        $sql .= ") " . $values . ")";
         
         if ($this->conn->query($sql) === TRUE) {
             return [
@@ -47,17 +57,24 @@ class TodoService {
         }
     }
     
-    public function updateTodo($id, $text, $description = '', $priority = null) {
+    public function updateTodo($id, $text, $description = '', $priority = null, $time = null) {
         $id = intval($id);
         $text = $this->conn->real_escape_string($text);
         $description = $this->conn->real_escape_string($description);
         
+        $sql = "UPDATE todos SET text = '$text', description = '$description'";
+        
         if ($priority !== null) {
             $priority = $this->conn->real_escape_string($priority);
-            $sql = "UPDATE todos SET text = '$text', description = '$description', priority = '$priority' WHERE id = $id";
-        } else {
-            $sql = "UPDATE todos SET text = '$text', description = '$description' WHERE id = $id";
+            $sql .= ", priority = '$priority'";
         }
+        
+        if ($time !== null) {
+            $time = $this->conn->real_escape_string($time);
+            $sql .= ", time = '$time'";
+        }
+        
+        $sql .= " WHERE id = $id";
         
         if ($this->conn->query($sql) === TRUE) {
             return [

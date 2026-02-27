@@ -7,7 +7,7 @@ function loadColumnPreferences() {
     if (saved) {
         return JSON.parse(saved);
     }
-    return { priority: false };
+    return { priority: false, time: false };
 }
 
 function saveColumnPreferences() {
@@ -75,6 +75,14 @@ function displayTodos(todos) {
         priorityCell.appendChild(prioritySelect);
         row.appendChild(priorityCell);
 
+        const timeCell = document.createElement('td');
+        timeCell.className = 'col-time';
+        timeCell.style.display = visibleColumns.time ? 'table-cell' : 'none';
+
+        const timeInput = createTimeInput(todo.time, todo.id);
+        timeCell.appendChild(timeInput);
+        row.appendChild(timeCell);
+
         tableBody.appendChild(row);
     });
 }
@@ -112,6 +120,72 @@ function createPriorityDropdown(currentPriority, todoId) {
     return select;
 }
 
+function createTimeInput(currentTime, todoId) {
+    const select = document.createElement('select');
+    select.className = 'time-cell-select';
+
+    const options = [
+        { value: '', label: 'Geen' },
+        { value: '10 min', label: '  10 min' },
+        { value: '30 min', label: '  30 min' },
+        { value: '1 uur', label: '  1 uur' },
+        { value: '2 uur', label: '  2 uur' },
+        { value: '3 uur', label: '  3 uur' },
+        { value: '4 uur', label: '  4 uur' },
+        { value: '5+ uur', label: '  5+ uur' }
+    ];
+
+    options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.label;
+        if (currentTime === opt.value) {
+            option.selected = true;
+        }
+        select.appendChild(option);
+    });
+
+    select.onclick = (e) => {
+        e.stopPropagation();
+    };
+
+    select.onchange = (e) => {
+        updateTodoTime(todoId, e.target.value);
+    };
+
+    return select;
+}
+
+function updateTodoTime(id, time) {
+    const todo = todosData.find(t => t.id == id);
+    if (!todo) return;
+
+    fetch(API_URL, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id: id,
+            text: todo.text,
+            description: todo.description || '',
+            priority: todo.priority || '',
+            time: time || ''
+        })
+    })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                loadTodos();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error bij updaten time:', error);
+        });
+}
+
 function updateTodoPriority(id, priority) {
     const todo = todosData.find(t => t.id == id);
     if (!todo) return;
@@ -125,7 +199,8 @@ function updateTodoPriority(id, priority) {
             id: id,
             text: todo.text,
             description: todo.description || '',
-            priority: priority || ''
+            priority: priority || '',
+            time: todo.time || ''
         })
     })
         .then(response => response.json())
@@ -163,13 +238,13 @@ function addTodo(text) {
         });
 }
 
-function updateTodo(id, text, description, priority) {
+function updateTodo(id, text, description, priority, time) {
     fetch(API_URL, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ id: id, text: text, description: description, priority: priority || '' })
+        body: JSON.stringify({ id: id, text: text, description: description, priority: priority || '', time: time || '' })
     })
         .then(response => response.json())
         .then(result => {
@@ -240,11 +315,13 @@ function openModal(todo) {
     const modalInput = document.getElementById('modalTodoText');
     const modalDescription = document.getElementById('modalTodoDescription');
     const modalPriority = document.getElementById('modalTodoPriority');
+    const modalTime = document.getElementById('modalTodoTime');
 
     currentTodoId = todo.id;
     modalInput.value = todo.text;
     modalDescription.value = todo.description || '';
     modalPriority.value = todo.priority || '';
+    modalTime.value = todo.time || '';
 
     modal.style.display = 'block';
 }
@@ -278,13 +355,14 @@ document.getElementById('saveBtn').onclick = function () {
     const text = document.getElementById('modalTodoText').value.trim();
     const description = document.getElementById('modalTodoDescription').value.trim();
     const priority = document.getElementById('modalTodoPriority').value;
+    const time = document.getElementById('modalTodoTime').value;
 
     if (text === '') {
         alert('Todo tekst mag niet leeg zijn');
         return;
     }
 
-    updateTodo(currentTodoId, text, description, priority);
+    updateTodo(currentTodoId, text, description, priority, time);
 };
 
 document.getElementById('deleteBtn').onclick = function () {
@@ -304,9 +382,12 @@ window.addEventListener('load', function () {
     const addColumnBtn = document.getElementById('addColumnBtn');
     const columnDropdown = document.getElementById('columnDropdown');
     const priorityToggle = document.getElementById('priorityToggle');
+    const timeToggle = document.getElementById('timeToggle');
 
     priorityToggle.checked = visibleColumns.priority;
+    timeToggle.checked = visibleColumns.time;
     toggleColumn('priority', visibleColumns.priority);
+    toggleColumn('time', visibleColumns.time);
 
     addColumnBtn.onclick = function (e) {
         e.stopPropagation();
@@ -324,7 +405,46 @@ window.addEventListener('load', function () {
         toggleColumn('priority', this.checked);
         saveColumnPreferences();
     };
+
+    timeToggle.onchange = function () {
+        visibleColumns.time = this.checked;
+        toggleColumn('time', this.checked);
+        saveColumnPreferences();
+    };
+
+    showUpdatePopupIfNeeded();
 });
+
+function showUpdatePopupIfNeeded() {
+    const hasSeenUpdate = localStorage.getItem('hasSeenTimeUpdate');
+
+    if (!hasSeenUpdate) {
+        const popup = document.getElementById('updatePopup');
+        const closeBtn = document.querySelector('.update-close');
+        const okBtn = document.getElementById('updatePopupBtn');
+
+        setTimeout(() => {
+            popup.style.display = 'block';
+        }, 800);
+
+        closeBtn.onclick = function () {
+            popup.style.display = 'none';
+            localStorage.setItem('hasSeenTimeUpdate', 'true');
+        };
+
+        okBtn.onclick = function () {
+            popup.style.display = 'none';
+            localStorage.setItem('hasSeenTimeUpdate', 'true');
+        };
+
+        window.onclick = function (event) {
+            if (event.target === popup) {
+                popup.style.display = 'none';
+                localStorage.setItem('hasSeenTimeUpdate', 'true');
+            }
+        };
+    }
+}
 
 function toggleColumn(columnName, show) {
     const headerCells = document.querySelectorAll(`.col-${columnName}`);
