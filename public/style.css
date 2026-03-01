@@ -553,6 +553,30 @@ button:hover {
     background-color: #da190b;
 }
 
+.btn-trash {
+    background-color: transparent;
+    border: 2px solid #e0e0e0;
+    padding: 8px 12px;
+    position: relative;
+    top: 5px;
+}
+
+.btn-trash img {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+.btn-trash img {
+    width: 20px;
+    height: 20px;
+}
+
+.btn-trash:hover {
+    background-color: #f5f5f5;
+    border-color: #d90000;
+}
+
 /* Update Popup Styling */
 .update-popup {
     display: none;
