@@ -9,9 +9,11 @@
 </head>
 
 <body>
+    <!-- Hoofdcontainer voor de hele applicatie -->
     <div class="container">
         <h1>Todo App</h1>
 
+        <!-- Formulier om een nieuwe todo toe te voegen -->
         <div class="add-todo-form">
             <h2>Nieuwe todo toevoegen</h2>
             <form id="todoForm">
@@ -20,6 +22,7 @@
             </form>
         </div>
 
+        <!-- Sectie met de lijst van alle todo's -->
         <div class="todo-list">
             <div class="todo-list-header">
                 <h2>Mijn Todo's</h2>
@@ -42,6 +45,7 @@
                 </div>
             </div>
 
+            <!-- Container voor de todo tabel en het lege bericht -->
             <div class="table-container">
                 <table id="todoTable" class="todo-table">
                     <thead>
@@ -69,11 +73,13 @@
         </div>
     </div>
 
-    <!-- Modal voor todo details -->
+    <!-- Popup scherm om een todo te bewerken (modal) -->
     <div id="todoModal" class="modal">
+        <!-- Inhoud van het bewerk scherm -->
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Todo Details</h2>
+            <!-- Formulier met alle velden om de todo te bewerken -->
             <div class="modal-body">
                 <label for="modalTodoText">Taak</label>
                 <input type="text" id="modalTodoText" maxlength="50">
@@ -109,12 +115,26 @@
 
                 <div class="modal-actions">
                     <button id="saveBtn" class="btn-save">Opslaan</button>
-                    <button id="deleteBtn" class="btn-delete">Verwijderen</button>
+                    <button id="cancelBtn" class="btn-delete">Annuleren</button>
+                    <button id="deleteBtn" class="btn-trash"><img src="../img/bin.png" alt="Verwijderen"></button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Bevestigingsscherm voor het verwijderen van een todo -->
+    <div id="deleteConfirmModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2>Todo verwijderen</h2>
+            <p style="margin: 20px 0;">Weet je zeker dat je deze todo wilt verwijderen?</p>
+            <div class="modal-actions">
+                <button id="confirmDeleteBtn" class="btn-delete">Ja, verwijderen</button>
+                <button id="cancelDeleteBtn" class="btn-save">Annuleren</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup die verschijnt bij eerste gebruik om nieuwe features te tonen -->
     <div id="updatePopup" class="update-popup" style="display: none;">
         <div class="update-popup-content">
             <span class="update-close">&times;</span>

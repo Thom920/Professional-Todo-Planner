@@ -7,26 +7,37 @@ De app bestaat uit 3 lagen:
 2. **Backend** - PHP (API + Service layer)
 3. **Database** - MySQL
 
-## Flow: Todo toevoegen
+## Features
 
-1. **Gebruiker** → Vult todo in en klikt "Toevoegen"
-2. **app.js** → Stuurt todo naar `api.php` (POST request)
-3. **api.php** → Ontvangt data en roept `TodoService` aan
-4. **TodoService.php** → Slaat todo op in MySQL database
-5. **Database** → Bevestigt opslag
-6. **app.js** → Haalt alle todos op en toont ze
+- ✅ Todo's toevoegen, bewerken en verwijderen
+- ✅ Prioriteit instellen (Laag, Medium, Hoog, ASAP)
+- ✅ Tijdsduur kiezen (10 min tot 5+ uur)
+- ✅ Deadline instellen (met vandaag-markering)
+- ✅ Sorteren op tekst, prioriteit, tijd of deadline
+- ✅ Kolommen tonen/verbergen
+- ✅ Beschrijving toevoegen via modal
+
+## API Endpoints
+
+| Method | Doel | Verplichte velden |
+|--------|------|------------------|
+| GET | Alle todos ophalen | - |
+| POST | Nieuwe todo | text |
+| PUT | Todo bijwerken | id, text |
+| DELETE | Todo verwijderen | id |
+| PATCH | Completed toggle | id |
 
 ## Belangrijkste bestanden
 
 ### Frontend (public/)
-- **index.html** - Hoofdpagina met formulier en todo lijst
-- **app.js** - Verstuurt/ontvangt data via API
+- **index.html** - Hoofdpagina met tabel en modal
+- **app.js** - JavaScript logica en API calls
 - **style.css** - Styling
 
-### Backend (src/)
-- **api.php** - API endpoint (GET/POST)
-- **TodoService.php** - Database operaties
-- **database.php** - Database connectie
+### Backend
+- **public/api.php** - API endpoint (routing)
+- **src/TodoService.php** - Database operaties
+- **config/database.php** - Database connectie
 
 ## Database structuur
 
@@ -35,5 +46,9 @@ De app bestaat uit 3 lagen:
 |------|------|--------------|
 | id | INT | Primary key |
 | text | VARCHAR(255) | Todo tekst |
-| completed | BOOLEAN | Status |
+| description | TEXT | Uitgebreide beschrijving |
+| priority | VARCHAR(20) | Laag/Medium/Hoog/ASAP |
+| time | VARCHAR(20) | Geschatte tijdsduur |
+| deadline | DATE | Deadline datum |
+| completed | BOOLEAN | Afgevinkt status |
 | created_at | TIMESTAMP | Aanmaak datum |

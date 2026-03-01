@@ -1,10 +1,15 @@
 # Todo App
 
-Een simpele todo applicatie gebouwd met PHP, MySQL en vanilla JavaScript.
+Een simpele todo applicatie gebouwd met HTML, css, vanilla JavaScript, PHP en MySQL.
 
 ## Features
 - ✅ Todos toevoegen
 - ✅ Todos bekijken
+- ✅ Todos bewerken
+- ✅ Todos verwijderen
+- ✅ Todos afvinken
+- ✅ Prioriteit, tijdsduur en deadline toevoegen
+- ✅ soorteren op taak, priorieit, tijdsduur of deadline.
 - ✅ Database opslag met MySQL
 
 ## Technologieën
@@ -23,8 +28,3 @@ p3-startproject-thom/
 ├── config/         # Database configuratie
 └── docs/           # Documentatie
 ```
-
-## Gebruik
-1. Start XAMPP (Apache + MySQL)
-2. Importeer database: `config/setup_database.sql`
-3. Open in browser: `http://localhost/[pad-naar-project]/public/`
