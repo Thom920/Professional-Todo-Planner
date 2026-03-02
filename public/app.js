@@ -1,11 +1,49 @@
 // ===== GLOBALE VARIABELEN =====
 const API_URL = 'api.php'; // De URL van de API
+const CATEGORY_API_URL = 'categories.php'; // De URL van de Category API
 let currentTodoId = null; // Welke todo is open in de modal
 let todosData = []; // Alle todo's die zijn opgehaald
+let categoriesData = []; // Alle categorieën die zijn opgehaald
 let todoToDelete = null; // Welke todo moet verwijderd worden (voor bevestiging)
 
 // Houdt bij hoe er gesorteerd wordt
 let currentSort = { column: null, direction: 'none' }; // 'asc', 'desc', 'none'
+
+// ===== HELPER FUNCTIES =====
+// Toon een error message bij een input veld
+function showError(inputId, errorId, message) {
+    const input = document.getElementById(inputId);
+    const errorDiv = document.getElementById(errorId);
+    input.classList.add('input-error');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+}
+
+// Verberg error message bij een input veld
+function hideError(inputId, errorId) {
+    const input = document.getElementById(inputId);
+    const errorDiv = document.getElementById(errorId);
+    input.classList.remove('input-error');
+    errorDiv.style.display = 'none';
+}
+
+// Truncate text met ellipsis
+function truncateText(text, maxLength) {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+}
+
+// Maak een gekleurde badge (wordt gebruikt voor priority en category)
+function createColorBadge(color) {
+    const badge = document.createElement('span');
+    badge.style.backgroundColor = color;
+    badge.style.width = '12px';
+    badge.style.height = '12px';
+    badge.style.borderRadius = '50%';
+    badge.style.display = 'inline-block';
+    badge.style.flexShrink = '0';
+    return badge;
+}
 
 // ===== DATUM EN TIJD FUNCTIES =====
 // Kijkt of datum vandaag is
@@ -41,6 +79,250 @@ function loadTodos() {
         });
 }
 
+// ===== CATEGORY API COMMUNICATIE =====
+// Haal alle categorieën op van de server
+function loadCategories() {
+    fetch(CATEGORY_API_URL)
+        .then(response => response.json())
+        .then(categories => {
+            categoriesData = categories;
+            // Update alle category dropdowns met de nieuwe data
+            updateCategorySelects();
+            // Herrender de todo lijst met de nieuwe categorieën
+            if (todosData.length > 0) {
+                applySortingAndFiltering();
+            }
+        })
+        .catch(error => {
+            console.error('Error bij laden categorieën:', error);
+        });
+}
+
+// Voeg een nieuwe categorie toe
+function addCategory(name, color) {
+    // Validatie
+    if (!name || name.trim() === '') {
+        showError('newCategoryName', 'categoryAddError', 'Categorie naam is verplicht');
+        return;
+    }
+    
+    // Verberg eventuele eerdere errors
+    hideError('newCategoryName', 'categoryAddError');
+    
+    fetch(CATEGORY_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: name, color: color })
+    })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Categorie succesvol toegevoegd, herlaad de lijst
+                loadCategories();
+                loadTodos(); // Herlaad ook de todos zodat de nieuwe/gewijzigde categorie er staat
+                // Leeg het invoerveld
+                document.getElementById('newCategoryName').value = '';
+                document.getElementById('newCategoryColor').value = '#3498db';
+            } else {
+                // Toon foutmelding visueel
+                showError('newCategoryName', 'categoryAddError', result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error bij toevoegen categorie:', error);
+            showError('newCategoryName', 'categoryAddError', 'Er ging iets mis bij het toevoegen');
+        });
+}
+
+// Werk een bestaande categorie bij
+function updateCategory(id, name, color) {
+    // Validatie
+    if (!name || name.trim() === '') {
+        showError('editCategoryName', 'categoryEditError', 'Categorie naam is verplicht');
+        return;
+    }
+    
+    // Verberg eventuele eerdere errors
+    hideError('editCategoryName', 'categoryEditError');
+    
+    fetch(CATEGORY_API_URL, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: id, name: name, color: color })
+    })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Categorie succesvol bijgewerkt
+                loadCategories();
+                loadTodos(); // Herlaad de todos om gewijzigde categorie te tonen
+                closeEditCategoryModal();
+            } else {
+                // Toon foutmelding visueel
+                showError('editCategoryName', 'categoryEditError', result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error bij bijwerken categorie:', error);
+            showError('editCategoryName', 'categoryEditError', 'Er ging iets mis bij het bijwerken');
+        });
+}
+
+// Open de edit modal voor een categorie
+let currentEditCategoryId = null;
+
+function openEditCategoryModal(id, name, color) {
+    currentEditCategoryId = id;
+    document.getElementById('editCategoryName').value = name;
+    document.getElementById('editCategoryColor').value = color;
+    document.getElementById('editCategoryModal').style.display = 'block';
+}
+
+// Sluit de edit modal
+function closeEditCategoryModal() {
+    document.getElementById('editCategoryModal').style.display = 'none';
+    currentEditCategoryId = null;
+    // Verberg eventuele error messages
+    hideError('editCategoryName', 'categoryEditError');
+}
+
+// Open de delete confirmatie modal
+let categoryToDelete = null;
+
+function openDeleteCategoryModal(id) {
+    categoryToDelete = id;
+    document.getElementById('deleteCategoryModal').style.display = 'block';
+}
+
+// Sluit de delete modal
+function closeDeleteCategoryModal() {
+    document.getElementById('deleteCategoryModal').style.display = 'none';
+    categoryToDelete = null;
+}
+
+// Voer de verwijdering uit
+function executeDeleteCategory() {
+    if (!categoryToDelete) return;
+
+    fetch(CATEGORY_API_URL, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: categoryToDelete })
+    })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Categorie succesvol verwijderd
+                loadCategories();
+                loadTodos(); // Herlaad de todos zodat verwijderde categorie verdwijnt
+                closeDeleteCategoryModal();
+            } else {
+                console.error('Error bij verwijderen:', result.message);
+                closeDeleteCategoryModal();
+            }
+        })
+        .catch(error => {
+            console.error('Error bij verwijderen categorie:', error);
+            closeDeleteCategoryModal();
+        });
+}
+
+// Update alle category select dropdowns (in tabel en modal)
+function updateCategorySelects() {
+    // Update de modal category select
+    const modalCategorySelect = document.getElementById('modalTodoCategory');
+    if (modalCategorySelect) {
+        // Bewaar de huidige selectie
+        const currentValue = modalCategorySelect.value;
+
+        // Leeg de select en voeg de default optie toe
+        modalCategorySelect.innerHTML = '<option value="">Geen categorie</option>';
+
+        // Voeg alle categorieën toe (met truncated names voor lange categorieën)
+        categoriesData.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = truncateText(category.name, 30);
+            modalCategorySelect.appendChild(option);
+        });
+
+        // Herstel de selectie als die er nog is
+        if (currentValue) {
+            modalCategorySelect.value = currentValue;
+        }
+    }
+
+    // Update de category management lijst
+    updateCategoryList();
+}
+
+// Update de lijst met categorieën in de category modal
+function updateCategoryList() {
+    const categoryList = document.getElementById('categoryList');
+    if (!categoryList) return;
+
+    if (categoriesData.length === 0) {
+        categoryList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">Nog geen categorieën</p>';
+        return;
+    }
+
+    categoryList.innerHTML = '';
+    categoriesData.forEach(category => {
+        const categoryItem = document.createElement('div');
+        categoryItem.className = 'category-item';
+
+        // Category info
+        const categoryInfo = document.createElement('div');
+        categoryInfo.className = 'category-info';
+
+        const colorBadge = document.createElement('span');
+        colorBadge.className = 'category-color-badge';
+        colorBadge.style.backgroundColor = category.color;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'category-name';
+        nameSpan.textContent = category.name; // Veilig tegen XSS
+
+        categoryInfo.appendChild(colorBadge);
+        categoryInfo.appendChild(nameSpan);
+
+        // Category actions
+        const categoryActions = document.createElement('div');
+        categoryActions.className = 'category-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'category-edit-btn';
+        editBtn.onclick = () => openEditCategoryModal(category.id, category.name, category.color);
+        const editImg = document.createElement('img');
+        editImg.src = '../img/pencil.png';
+        editImg.alt = 'Bewerken';
+        editBtn.appendChild(editImg);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'category-delete-btn';
+        deleteBtn.onclick = () => openDeleteCategoryModal(category.id);
+        const deleteImg = document.createElement('img');
+        deleteImg.src = '../img/bin.png';
+        deleteImg.alt = 'Verwijderen';
+        deleteBtn.appendChild(deleteImg);
+
+        categoryActions.appendChild(editBtn);
+        categoryActions.appendChild(deleteBtn);
+
+        categoryItem.appendChild(categoryInfo);
+        categoryItem.appendChild(categoryActions);
+        categoryList.appendChild(categoryItem);
+    });
+}
+
+// ==== TODOS API COMMUNICATIE ====
+
 // ==== Voeg een nieuwe todo toe ====
 function addTodo(text) {
     // Stuur een POST request naar de API om een nieuwe todo aan te maken
@@ -70,7 +352,7 @@ function addTodo(text) {
 }
 
 // Werk een bestaande todo bij
-function updateTodo(id, text, description, priority, time, deadline) {
+function updateTodo(id, text, description, priority, time, deadline, category_id) {
     // Deze functie wordt aangeroepen als je op de 'Opslaan' knop klikt in de modal
     fetch(API_URL, {
         method: 'PUT',
@@ -78,7 +360,7 @@ function updateTodo(id, text, description, priority, time, deadline) {
             'Content-Type': 'application/json'
         },
         // Stuur alle velden mee, gebruik '' (leeg) als een veld niet is ingevuld
-        body: JSON.stringify({ id: id, text: text, description: description, priority: priority || '', time: time || '', deadline: deadline || '' })
+        body: JSON.stringify({ id: id, text: text, description: description, priority: priority || '', time: time || '', deadline: deadline || '', category_id: category_id || '' })
     })
         .then(response => response.json())
         .then(result => {
@@ -115,7 +397,8 @@ function updateTodoField(id, fieldName, value) {
             // Als het het veld is dat we willen updaten, gebruik de nieuwe value, anders behoud de oude waarde
             priority: fieldName === 'priority' ? (value || '') : (todo.priority || ''),
             time: fieldName === 'time' ? (value || '') : (todo.time || ''),
-            deadline: fieldName === 'deadline' ? (value || '') : (todo.deadline || '')
+            deadline: fieldName === 'deadline' ? (value || '') : (todo.deadline || ''),
+            category_id: fieldName === 'category_id' ? (value || '') : (todo.category_id || '')
         })
     })
         .then(response => response.json())
@@ -145,6 +428,10 @@ function updateTodoTime(id, time) {
 
 function updateTodoPriority(id, priority) {
     updateTodoField(id, 'priority', priority);
+}
+
+function updateTodoCategory(id, category_id) {
+    updateTodoField(id, 'category_id', category_id);
 }
 
 // Verwijder een todo
@@ -279,6 +566,7 @@ function displayTodos(todos) {
         addCell('priority', createPriorityDropdown, todo.priority);
         addCell('time', createTimeInput, todo.time);
         addCell('deadline', createDeadlineInput, todo.deadline);
+        addCell('category', createCategoryDropdown, todo.category_id);
 
         tableBody.appendChild(row);
     });
@@ -286,24 +574,45 @@ function displayTodos(todos) {
 
 // ==== Dropdown voor prioriteit selectie ====
 function createPriorityDropdown(currentPriority, todoId) {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.alignItems = 'center';
+    container.style.gap = '8px';
+
+    // Lijst met alle prioriteit opties met kleur
+    const options = [
+        { value: '', label: 'Geen', color: null },
+        { value: 'laag', label: 'Laag', color: '#4caf50' },
+        { value: 'medium', label: 'Medium', color: '#ff9800' },
+        { value: 'hoog', label: 'Hoog', color: '#f44336' },
+        { value: 'ASAP', label: 'ASAP', color: '#ff5252' }
+    ];
+
+    // Voeg gekleurde badge toe (of placeholder ruimte)
+    const currentOption = options.find(opt => opt.value === currentPriority);
+    if (currentOption && currentOption.color) {
+        const badge = createColorBadge(currentOption.color);
+        badge.className = 'priority-color-badge';
+        container.appendChild(badge);
+    } else {
+        // Placeholder voor alignment
+        const placeholder = document.createElement('span');
+        placeholder.style.width = '12px';
+        placeholder.style.height = '12px';
+        placeholder.style.display = 'inline-block';
+        placeholder.style.flexShrink = '0';
+        container.appendChild(placeholder);
+    }
+
     const select = document.createElement('select');
     select.className = 'priority-cell-select';
-
-    // Lijst met alle prioriteit opties
-    const options = [
-        { value: '', label: 'Geen' },
-        { value: 'laag', label: '🟢Laag' },
-        { value: 'medium', label: '🟡Medium' },
-        { value: 'hoog', label: '🔴Hoog' },
-        { value: 'ASAP', label: '⚠️ASAP' }
-    ];
+    select.style.flex = '1';
 
     // Voeg alle opties toe aan de dropdown
     options.forEach(opt => {
         const option = document.createElement('option');
         option.value = opt.value;
         option.textContent = opt.label;
-        // Markeer de huidige prioriteit als geselecteerd
         if (currentPriority === opt.value) {
             option.selected = true;
         }
@@ -311,16 +620,13 @@ function createPriorityDropdown(currentPriority, todoId) {
     });
 
     // Voorkom dat klikken op dropdown de modal opent
-    select.onclick = (e) => {
-        e.stopPropagation();
-    };
+    select.onclick = (e) => e.stopPropagation();
 
     // Als de gebruiker een andere prioriteit kiest, update de todo
-    select.onchange = (e) => {
-        updateTodoPriority(todoId, e.target.value);
-    };
+    select.onchange = (e) => updateTodoPriority(todoId, e.target.value);
 
-    return select;
+    container.appendChild(select);
+    return container;
 }
 
 // ==== Dropdown voor tijd selectie ====
@@ -425,6 +731,67 @@ function createDeadlineInput(currentDeadline, todoId) {
     return container;
 }
 
+// ==== Dropdown voor categorie selectie ====
+function createCategoryDropdown(currentCategoryId, todoId) {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.alignItems = 'center';
+    container.style.gap = '8px';
+
+    // Voeg gekleurde badge toe (of placeholder ruimte)
+    if (currentCategoryId) {
+        const category = categoriesData.find(c => c.id == currentCategoryId);
+        if (category) {
+            const badge = createColorBadge(category.color);
+            badge.className = 'category-color-badge';
+            container.appendChild(badge);
+        }
+    } else {
+        // Placeholder voor alignment
+        const placeholder = document.createElement('span');
+        placeholder.style.width = '12px';
+        placeholder.style.height = '12px';
+        placeholder.style.display = 'inline-block';
+        placeholder.style.flexShrink = '0';
+        container.appendChild(placeholder);
+    }
+
+    const select = document.createElement('select');
+    select.className = 'category-cell-select';
+    select.value = currentCategoryId || '';
+    select.style.flex = '1';
+
+    // Voeg de default optie toe
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = '-';
+    select.appendChild(defaultOption);
+
+    // Voeg alle categorieën toe (met truncated names voor lange categorieën)
+    categoriesData.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = truncateText(category.name, 25);
+        select.appendChild(option);
+    });
+
+    // Stel de huidige waarde in
+    if (currentCategoryId) {
+        select.value = currentCategoryId;
+    }
+
+    // Event listeners
+    select.onchange = (e) => {
+        e.stopPropagation();
+        updateTodoCategory(todoId, e.target.value);
+    };
+    select.onclick = (e) => e.stopPropagation();
+    container.onclick = (e) => e.stopPropagation();
+
+    container.appendChild(select);
+    return container;
+}
+
 // ===== SORTEER EN FILTER FUNCTIES =====
 // Sorteer de todo's op basis van een kolom (text, priority, time, deadline)
 function sortTodos(todos, column, direction) {
@@ -462,12 +829,26 @@ function sortTodos(todos, column, direction) {
 
             case 'deadline':
                 // Zet datum om naar milliseconden voor vergelijking
-                valA = a.deadline ? new Date(a.deadline).getTime() : 0;
-                valB = b.deadline ? new Date(b.deadline).getTime() : 0;
+                const dateA = new Date(a.deadline);
+                const dateB = new Date(b.deadline);
+                // Check op lege, invalid of 0000-00-00 datums
+                valA = isNaN(dateA.getTime()) || !a.deadline || a.deadline === '0000-00-00' ? 0 : dateA.getTime();
+                valB = isNaN(dateB.getTime()) || !b.deadline || b.deadline === '0000-00-00' ? 0 : dateB.getTime();
+                // Items zonder deadline komen altijd achteraan
                 if (valA === 0 && valB === 0) return 0;
-                if (valA === 0) return 1; // Geen deadline komt achteraan
+                if (valA === 0) return 1;
                 if (valB === 0) return -1;
                 return (valA - valB) * multiplier;
+
+            case 'category':
+                // Sorteer op categorie naam (alfabetisch)
+                valA = (a.category_name || '').toLowerCase();
+                valB = (b.category_name || '').toLowerCase();
+                // Items zonder categorie komen achteraan
+                if (!valA && !valB) return 0;
+                if (!valA) return 1;
+                if (!valB) return -1;
+                return valA.localeCompare(valB) * multiplier;
 
             default:
                 return 0;
@@ -508,6 +889,7 @@ function openModal(todo) {
     const modalDescription = document.getElementById('modalTodoDescription');
     const modalPriority = document.getElementById('modalTodoPriority');
     const modalTime = document.getElementById('modalTodoTime');
+    const modalCategory = document.getElementById('modalTodoCategory');
     const modalDeadlineDisplay = document.getElementById('modalDeadlineDisplay');
     const modalDeadlineContainer = document.getElementById('modalDeadlineContainer');
 
@@ -519,6 +901,7 @@ function openModal(todo) {
     modalDescription.value = todo.description || '';
     modalPriority.value = todo.priority || '';
     modalTime.value = todo.time || '';
+    modalCategory.value = todo.category_id || '';
 
     // Bewaar de deadline in het container element
     modalDeadlineContainer.dataset.deadline = todo.deadline || '';
@@ -539,6 +922,8 @@ function closeModal() {
     modal.style.display = 'none';
     // Reset de huidige todo ID
     currentTodoId = null;
+    // Verberg eventuele error messages
+    hideError('modalTodoText', 'todoTextError');
 }
 
 // Update hoe de deadline wordt getoond in de modal
@@ -606,10 +991,15 @@ function loadColumnPreferences() {
     const saved = localStorage.getItem('visibleColumns');
     if (saved) {
         // Zet de opgeslagen JSON string terug naar een object
-        return JSON.parse(saved);
+        const prefs = JSON.parse(saved);
+        // Als category nog niet bestaat in de opgeslagen voorkeuren, voeg het toe (default true)
+        if (prefs.category === undefined) {
+            prefs.category = true;
+        }
+        return prefs;
     }
     // Standaard zijn alle kolommen zichtbaar
-    return { priority: true, time: true, deadline: true };
+    return { priority: true, time: true, deadline: true, category: true };
 }
 
 // Sla de huidige kolom voorkeuren op in de browser
@@ -664,16 +1054,25 @@ document.getElementById('saveBtn').onclick = function () {
     const priority = document.getElementById('modalTodoPriority').value;
     const time = document.getElementById('modalTodoTime').value;
     const deadline = document.getElementById('modalDeadlineContainer').dataset.deadline || '';
+    const category_id = document.getElementById('modalTodoCategory').value;
 
-    // Controleer of de todo tekst niet leeg is anders geef een waarschuwing
+    // Controleer of de todo tekst niet leeg is
     if (text === '') {
-        alert('Todo tekst mag niet leeg zijn');
+        showError('modalTodoText', 'todoTextError', 'Todo tekst mag niet leeg zijn');
         return;
     }
+    
+    // Verberg eventuele eerdere errors
+    hideError('modalTodoText', 'todoTextError');
 
     // Stuur de update naar de server
-    updateTodo(currentTodoId, text, description, priority, time, deadline);
+    updateTodo(currentTodoId, text, description, priority, time, deadline, category_id);
 };
+
+// Verberg error message wanneer gebruiker begint te typen in todo text
+document.getElementById('modalTodoText').addEventListener('input', function() {
+    hideError('modalTodoText', 'todoTextError');
+});
 
 // Verwijder knop in de modal
 document.getElementById('deleteBtn').onclick = function () {
@@ -691,18 +1090,23 @@ document.getElementById('cancelDeleteBtn').onclick = function () {
 };
 
 // Sluit modals als je buiten het scherm klikt
+// ===== GLOBALE EVENT LISTENERS =====
 window.onclick = function (event) {
     const modal = document.getElementById('todoModal');
     const deleteModal = document.getElementById('deleteConfirmModal');
+    const categoryModal = document.getElementById('categoryModal');
+    const editCategoryModal = document.getElementById('editCategoryModal');
+    const deleteCategoryModal = document.getElementById('deleteCategoryModal');
+    const updatePopup = document.getElementById('updatePopup');
 
-    // Sluit todo bewerk modal
-    if (event.target === modal) {
-        closeModal();
-    }
-
-    // Sluit delete bevestigings modal
-    if (event.target === deleteModal) {
-        closeDeleteModal();
+    if (event.target === modal) closeModal();
+    if (event.target === deleteModal) closeDeleteModal();
+    if (event.target === categoryModal) categoryModal.style.display = 'none';
+    if (event.target === editCategoryModal) closeEditCategoryModal();
+    if (event.target === deleteCategoryModal) closeDeleteCategoryModal();
+    if (event.target === updatePopup) {
+        updatePopup.style.display = 'none';
+        localStorage.setItem('hasSeenTimeUpdate', 'true');
     }
 };
 
@@ -711,24 +1115,24 @@ window.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' || event.key === 'Esc') {
         const modal = document.getElementById('todoModal');
         const deleteModal = document.getElementById('deleteConfirmModal');
+        const categoryModal = document.getElementById('categoryModal');
+        const editCategoryModal = document.getElementById('editCategoryModal');
+        const deleteCategoryModal = document.getElementById('deleteCategoryModal');
 
-        // Sluit todo bewerk modal
-        if (modal.style.display === 'block') {
-            closeModal();
-        }
-
-        // Sluit delete bevestigings modal
-        if (deleteModal.style.display === 'block') {
-            closeDeleteModal();
-        }
+        if (modal && modal.style.display === 'block') closeModal();
+        if (deleteModal && deleteModal.style.display === 'block') closeDeleteModal();
+        if (categoryModal && categoryModal.style.display === 'block') categoryModal.style.display = 'none';
+        if (editCategoryModal && editCategoryModal.style.display === 'block') closeEditCategoryModal();
+        if (deleteCategoryModal && deleteCategoryModal.style.display === 'block') closeDeleteCategoryModal();
     }
 });
 
 // ===== PAGINA LADEN =====
 // Als de pagina klaar is met laden, start alles op
 window.addEventListener('load', function () {
-    // Laad alle todo's van de server
+    // Laad alle todo's en categorieën van de server
     loadTodos();
+    loadCategories();
 
     // Haal alle elementen op voor de kolom toggle functionaliteit
     const addColumnBtn = document.getElementById('addColumnBtn');
@@ -736,16 +1140,19 @@ window.addEventListener('load', function () {
     const priorityToggle = document.getElementById('priorityToggle');
     const timeToggle = document.getElementById('timeToggle');
     const deadlineToggle = document.getElementById('deadlineToggle');
+    const categoryToggle = document.getElementById('categoryToggle');
 
     // Zet de checkboxes op basis van opgeslagen voorkeuren
     priorityToggle.checked = visibleColumns.priority;
     timeToggle.checked = visibleColumns.time;
     deadlineToggle.checked = visibleColumns.deadline;
+    categoryToggle.checked = visibleColumns.category;
 
     // Pas de kolom zichtbaarheid toe
     toggleColumn('priority', visibleColumns.priority);
     toggleColumn('time', visibleColumns.time);
     toggleColumn('deadline', visibleColumns.deadline);
+    toggleColumn('category', visibleColumns.category);
 
     // Als je op de kolom knop klikt, toon/verberg het menu
     addColumnBtn.onclick = function (e) {
@@ -780,6 +1187,84 @@ window.addEventListener('load', function () {
         toggleColumn('deadline', this.checked);
         saveColumnPreferences();
     };
+
+    // Als de category checkbox verandert, toon/verberg de kolom
+    categoryToggle.onchange = function () {
+        visibleColumns.category = this.checked;
+        toggleColumn('category', this.checked);
+        saveColumnPreferences();
+    };
+
+    // ===== CATEGORY MODAL EVENT LISTENERS =====
+    const manageCategoriesBtn = document.getElementById('manageCategoriesBtn');
+    const categoryModal = document.getElementById('categoryModal');
+    const closeCategoryBtn = document.querySelector('.close-category');
+    const addCategoryBtn = document.getElementById('addCategoryBtn');
+    const editCategoryModal = document.getElementById('editCategoryModal');
+    const closeEditCategoryBtn = editCategoryModal.querySelector('.close');
+    const saveEditCategoryBtn = document.getElementById('saveEditCategoryBtn');
+    const cancelEditCategoryBtn = document.getElementById('cancelEditCategoryBtn');
+    const deleteCategoryModal = document.getElementById('deleteCategoryModal');
+    const confirmDeleteCategoryBtn = document.getElementById('confirmDeleteCategoryBtn');
+    const cancelDeleteCategoryBtn = document.getElementById('cancelDeleteCategoryBtn');
+
+    // Open de category modal als je op "Beheer categorieën" klikt
+    manageCategoriesBtn.onclick = function (e) {
+        e.stopPropagation();
+        columnDropdown.style.display = 'none'; // Sluit de dropdown
+        categoryModal.style.display = 'block';
+    };
+
+    // Sluit de category modal
+    closeCategoryBtn.onclick = function () {
+        categoryModal.style.display = 'none';
+    };
+
+    // Voeg een nieuwe categorie toe
+    addCategoryBtn.onclick = function () {
+        const name = document.getElementById('newCategoryName').value.trim();
+        const color = document.getElementById('newCategoryColor').value;
+
+        addCategory(name, color);
+    };
+
+    // Enter toets in het naam veld voegt ook een categorie toe
+    document.getElementById('newCategoryName').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addCategoryBtn.click();
+        }
+    });
+
+    // Verberg error message wanneer gebruiker begint te typen in category name
+    document.getElementById('newCategoryName').addEventListener('input', function() {
+        hideError('newCategoryName', 'categoryAddError');
+    });
+
+    // Edit category modal event listeners
+    closeEditCategoryBtn.onclick = closeEditCategoryModal;
+    cancelEditCategoryBtn.onclick = closeEditCategoryModal;
+
+    saveEditCategoryBtn.onclick = function () {
+        const name = document.getElementById('editCategoryName').value.trim();
+        const color = document.getElementById('editCategoryColor').value;
+
+        // Check alleen of er een ID is, laat updateCategory() de naam valideren
+        if (!currentEditCategoryId) {
+            return;
+        }
+
+        updateCategory(currentEditCategoryId, name, color);
+    };
+
+    // Verberg error message wanneer gebruiker begint te typen in edit category name
+    document.getElementById('editCategoryName').addEventListener('input', function() {
+        hideError('editCategoryName', 'categoryEditError');
+    });
+
+    // Delete category modal event listeners
+    confirmDeleteCategoryBtn.onclick = executeDeleteCategory;
+    cancelDeleteCategoryBtn.onclick = closeDeleteCategoryModal;
 
     // Klik op kolom headers om te sorteren
     document.querySelectorAll('.sortable').forEach(header => {
@@ -835,14 +1320,6 @@ function showUpdatePopupIfNeeded() {
         okBtn.onclick = function () {
             popup.style.display = 'none';
             localStorage.setItem('hasSeenTimeUpdate', 'true');
-        };
-
-        // Sluit popup als je buiten het scherm klikt
-        window.onclick = function (event) {
-            if (event.target === popup) {
-                popup.style.display = 'none';
-                localStorage.setItem('hasSeenTimeUpdate', 'true');
-            }
         };
     }
 }

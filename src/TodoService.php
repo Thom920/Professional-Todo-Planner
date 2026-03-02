@@ -14,8 +14,14 @@ class TodoService {
     
     // Haal alle todo's op uit de database
     // Return: array met alle todo's, nieuwste eerst (gesorteerd op created_at)
+    // Inclusief categorie informatie via een LEFT JOIN
     public function getAllTodos() {
-        $sql = "SELECT * FROM todos ORDER BY created_at DESC"; // SQL query: selecteer alle kolommen van de todos tabel, sorteer op aanmaak datum
+        // SQL query met LEFT JOIN om ook de categorie informatie op te halen
+        // LEFT JOIN zorgt ervoor dat todo's zonder categorie ook worden opgehaald
+        $sql = "SELECT todos.*, categories.name as category_name, categories.color as category_color 
+                FROM todos 
+                LEFT JOIN categories ON todos.category_id = categories.id 
+                ORDER BY todos.created_at DESC";
 
         $result = $this->conn->query($sql); // Voer de query uit en sla het resultaat op
 
@@ -36,7 +42,7 @@ class TodoService {
     }
     
     // Maak een nieuwe todo aan in de database
-    public function createTodo($text, $description = '', $priority = null, $time = null, $deadline = null) {
+    public function createTodo($text, $description = '', $priority = null, $time = null, $deadline = null, $category_id = null) {
         // Escape alle input om SQL injection te voorkomen (beveiligingsmaatregel)
         // real_escape_string zorgt ervoor dat speciale karakters veilig worden gemaakt
         $text = $this->conn->real_escape_string($text);
@@ -45,6 +51,8 @@ class TodoService {
         $priority = $priority ? $this->conn->real_escape_string($priority) : null;
         $time = $time ? $this->conn->real_escape_string($time) : null;
         $deadline = $deadline ? $this->conn->real_escape_string($deadline) : null;
+        // Category_id moet een integer zijn of null
+        $category_id = $category_id ? intval($category_id) : null;
         
         // Bouw de SQL INSERT query op
         // Alleen de velden die een waarde hebben worden toegevoegd aan de query
@@ -69,6 +77,12 @@ class TodoService {
             $values .= ", '$deadline'";
         }
         
+        // Als category_id is ingevuld, voeg het toe aan de query
+        if ($category_id) {
+            $sql .= ", category_id";
+            $values .= ", $category_id";
+        }
+        
         // Sluit de query af door beide delen samen te voegen
         $sql .= ") " . $values . ")";
         
@@ -90,7 +104,7 @@ class TodoService {
     }
     
     // Update een bestaande todo in de database
-    public function updateTodo($id, $text, $description = '', $priority = null, $time = null, $deadline = null) {
+    public function updateTodo($id, $text, $description = '', $priority = null, $time = null, $deadline = null, $category_id = null) {
         // Zet ID om naar integer voor beveiliging (voorkomt SQL injection)
         $id = intval($id);
         // Escape de verplichte velden
@@ -114,6 +128,12 @@ class TodoService {
         if ($deadline !== null) {
             $deadline = $this->conn->real_escape_string($deadline);
             $sql .= ", deadline = '$deadline'";
+        }
+        
+        // Als category_id is ingevuld, voeg het toe aan de query
+        if ($category_id !== null) {
+            $category_id = $category_id ? intval($category_id) : 'NULL';
+            $sql .= ", category_id = $category_id";
         }
         
         // Sluit de query af met WHERE om aan te geven welke todo moet worden bijgewerkt

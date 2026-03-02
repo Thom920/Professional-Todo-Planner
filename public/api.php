@@ -7,7 +7,7 @@
  */
 
 
-header('Content-Type: application/json');// Aangeven dat JSON data terug wordt gestuurd (belangrijk voor de browser)
+header('Content-Type: application/json');// Aangeven dat JSON data terug wordt gestuurd
 header('Access-Control-Allow-Origin: *');// Sta toe dat andere websites de API kan gebruiken (CORS = Cross-Origin Resource Sharing)
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH');// Zeg welke soorten verzoeken zijn toegestaan
 
@@ -63,9 +63,10 @@ if ($method === 'GET') {
         $priority = isset($data['priority']) ? trim($data['priority']) : null;
         $time = isset($data['time']) ? trim($data['time']) : null;
         $deadline = isset($data['deadline']) ? trim($data['deadline']) : null;
+        $category_id = isset($data['category_id']) ? $data['category_id'] : null;
         
         // Update de todo in de database
-        $result = $todoService->updateTodo($data['id'], trim($data['text']), $description, $priority, $time, $deadline);
+        $result = $todoService->updateTodo($data['id'], trim($data['text']), $description, $priority, $time, $deadline, $category_id);
         
         // Stuur het resultaat terug
         echo json_encode($result);
