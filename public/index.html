@@ -27,7 +27,7 @@
             <div class="todo-list-header">
                 <h2>Mijn Todo's</h2>
                 <div class="column-controls">
-                    <button id="addColumnBtn" class="add-column-btn" title="Kolom toevoegen">+</button>
+                    <button id="addColumnBtn" class="add-column-btn" title="Kolommen beheren">⋯</button>
                     <div id="columnDropdown" class="column-dropdown" style="display: none;">
                         <div class="dropdown-item" data-column="priority">
                             <span>Prioriteit</span>
@@ -40,6 +40,14 @@
                         <div class="dropdown-item" data-column="deadline">
                             <span>Deadline</span>
                             <input type="checkbox" id="deadlineToggle" checked>
+                        </div>
+                        <div class="dropdown-item" data-column="category">
+                            <span>Categorie</span>
+                            <input type="checkbox" id="categoryToggle" checked>
+                        </div>
+                        <hr style="margin: 8px 0; border: none; border-top: 1px solid #e0e0e0;">
+                        <div class="dropdown-item" id="manageCategoriesBtn" style="color: #3498db; font-weight: 500;">
+                            <span>📊 Beheer categorieën</span>
                         </div>
                     </div>
                 </div>
@@ -63,6 +71,9 @@
                             <th class="col-deadline sortable" data-sort="deadline">
                                 Deadline <span class="sort-arrow"></span>
                             </th>
+                            <th class="col-category sortable" data-sort="category">
+                                Categorie <span class="sort-arrow"></span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="todoTableBody"></tbody>
@@ -83,6 +94,7 @@
             <div class="modal-body">
                 <label for="modalTodoText">Taak</label>
                 <input type="text" id="modalTodoText" maxlength="50">
+                <div id="todoTextError" class="error-message" style="display: none;"></div>
 
                 <label for="modalTodoDescription">Beschrijving</label>
                 <textarea id="modalTodoDescription" rows="4" placeholder="Voeg een beschrijving toe..."></textarea>
@@ -90,10 +102,10 @@
                 <label for="modalTodoPriority">Prioriteit</label>
                 <select id="modalTodoPriority" class="priority-select">
                     <option value="">Geen prioriteit</option>
-                    <option value="laag">🟢Laag</option>
-                    <option value="medium">🟡Medium</option>
-                    <option value="hoog">🔴Hoog</option>
-                    <option value="ASAP">⚠️ASAP</option>
+                    <option value="laag">Laag</option>
+                    <option value="medium">Medium</option>
+                    <option value="hoog">Hoog</option>
+                    <option value="ASAP">ASAP</option>
                 </select>
 
                 <label for="modalTodoTime">Tijdsduur</label>
@@ -112,6 +124,12 @@
                 <div id="modalDeadlineContainer" class="modal-deadline-container">
                     <span id="modalDeadlineDisplay" class="modal-deadline-display">-</span>
                 </div>
+
+                <label for="modalTodoCategory">Categorie</label>
+                <select id="modalTodoCategory" class="category-select">
+                    <option value="">Geen categorie</option>
+                    <!-- Categorieën worden hier dynamisch ingeladen -->
+                </select>
 
                 <div class="modal-actions">
                     <button id="saveBtn" class="btn-save">Opslaan</button>
@@ -146,6 +164,66 @@
                 <li><strong>Deadline waarschuwing</strong> - Zie direct welke taken vandaag af moeten.</li>
             </ul>
             <button id="updatePopupBtn" class="update-popup-btn">Heel Cool, lekker bezig Thom! 👍</button>
+        </div>
+    </div>
+
+    <!-- Modal voor het beheren van categorieën -->
+    <div id="categoryModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-category">&times;</span>
+            <h2>Categorieën Beheren</h2>
+
+            <!-- Formulier om nieuwe categorie toe te voegen -->
+            <div class="category-add-section">
+                <h3>Nieuwe categorie</h3>
+                <div class="category-form">
+                    <input type="text" id="newCategoryName" placeholder="Categorie naam..." maxlength="50" required>
+                    <input type="color" id="newCategoryColor" value="#3498db" title="Kies een kleur">
+                    <button id="addCategoryBtn" class="btn-save">Toevoegen</button>
+                </div>
+                <div id="categoryAddError" class="error-message" style="display: none;"></div>
+            </div>
+
+            <!-- Lijst met bestaande categorieën -->
+            <div class="category-list-section">
+                <h3>Bestaande categorieën</h3>
+                <div id="categoryList" class="category-list">
+                    <!-- Categorieën worden hier dynamisch ingeladen -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal voor het bewerken van een categorie -->
+    <div id="editCategoryModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close">&times;</span>
+            <h2>Categorie Bewerken</h2>
+            <div class="modal-body">
+                <label for="editCategoryName">Naam</label>
+                <input type="text" id="editCategoryName" class="modal-input" maxlength="50" required>
+                <div id="categoryEditError" class="error-message" style="display: none;"></div>
+
+                <label for="editCategoryColor">Kleur</label>
+                <input type="color" id="editCategoryColor" class="modal-color-input">
+
+                <div class="modal-actions">
+                    <button id="saveEditCategoryBtn" class="btn-save">Opslaan</button>
+                    <button id="cancelEditCategoryBtn" class="btn-cancel">Annuleren</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bevestigingsscherm voor het verwijderen van een categorie -->
+    <div id="deleteCategoryModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2>Categorie verwijderen</h2>
+            <p style="margin: 20px 0;">Weet je zeker dat je deze categorie wilt verwijderen?</p>
+            <div class="modal-actions">
+                <button id="confirmDeleteCategoryBtn" class="btn-delete">Ja, verwijderen</button>
+                <button id="cancelDeleteCategoryBtn" class="btn-save">Annuleren</button>
+            </div>
         </div>
     </div>
 

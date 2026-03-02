@@ -20,6 +20,15 @@
 1. Maak database aan: `todo_app`
 2. Voer SQL uit vanuit `config/setup_database.sql`
 
+**Standaard categorieën:**
+De database wordt aangemaakt met 4 standaard categorieën:
+- Werk (blauw)
+- Privé (paars)
+- School (oranje)
+- Sport (groen)
+
+Je kunt zelf nieuwe categorieën toevoegen
+
 ### 3. App gebruiken
 Open in browser: `http://localhost/[pad-naar-project]/public/`
 
