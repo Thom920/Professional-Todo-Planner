@@ -12,12 +12,3 @@
 | **Fase 6: Frontend Logica** | JavaScript modules (`api.js`, `ui.js`, `main.js`) koppelen aan de API en CRUD-functies activeren. | 4 uur | ✅ |
 | **Fase 7: Validatie & Afronding** | Client- en server-side validatie testen en documentatie schrijven. | 1 uur | ✅ |
 | **Totaal** | | **13.5 uur** | |
-
----
-
-## 2. Reflectie op AI-gebruik
-
-Voor dit project is AI (zoals Gemini/ChatGPT) gebruikt ter ondersteuning (**vibe-coding**).
-
-### Eigen bijdrage
-Hoewel AI is gebruikt voor de snelheid, is alle code handmatig nagelopen, verbetert, aangepast aan de specifieke projecteisen en voorzien van Nederlands commentaar om de werking uit te leggen.
