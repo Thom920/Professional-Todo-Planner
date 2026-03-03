@@ -41,8 +41,8 @@ De app bestaat uit 3 lagen:
 
 ### Frontend (public/)
 - **index.html** - Hoofdpagina met tabel en modal
-- **app.js** - JavaScript logica en API calls
-- **style.css** - Styling
+- **/js** - JavaScript logica en API calls
+- **/css** - Styling
 
 ### Backend
 - **public/api.php** - API endpoint voor todos (routing)

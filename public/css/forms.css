@@ -1,0 +1,164 @@
+/* ===== CHECKBOX ===== */
+.todo-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #00bb06;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    background-color: white;
+}
+
+.todo-checkbox:hover {
+    border-color: #45a049;
+    transform: scale(1.1);
+}
+
+.todo-checkbox:checked {
+    background-color: #00bb06;
+    border-color: #00bb06;
+}
+
+.todo-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* ===== FORM INPUTS & SELECTS ===== */
+.priority-cell-select,
+.priority-select,
+.time-cell-select,
+.time-select,
+.deadline-cell-input,
+.deadline-input,
+.category-cell-select,
+.category-select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    line-height: 1.4;
+    cursor: pointer;
+    background-color: white;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+    height: auto;
+}
+
+.priority-cell-select,
+.time-cell-select,
+.deadline-cell-input,
+.category-cell-select {
+    padding: 4px 8px;
+    font-size: 13px;
+}
+
+.deadline-cell-input {
+    width: 105px;
+}
+
+.priority-cell-select:hover,
+.priority-select:hover,
+.time-cell-select:hover,
+.time-select:hover,
+.deadline-cell-input:hover,
+.deadline-input:hover,
+.category-cell-select:hover,
+.category-select:hover {
+    border-color: #00bb06;
+}
+
+.priority-cell-select:focus,
+.priority-select:focus,
+.time-cell-select:focus,
+.time-select:focus,
+.deadline-cell-input:focus,
+.deadline-input:focus,
+.category-cell-select:focus,
+.category-select:focus {
+    outline: none;
+    border-color: #00bb06;
+}
+
+.priority-select,
+.time-select,
+.deadline-input,
+.category-select {
+    margin-bottom: 20px;
+}
+
+.deadline-cell-input.today {
+    border-color: #ff9800;
+    background-color: #fff3e0;
+    font-weight: 600;
+    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
+}
+
+/* ===== DEADLINE DISPLAY ===== */
+.deadline-display {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    border: 1px solid transparent;
+}
+
+.deadline-display:hover {
+    background-color: #e9ecef;
+    border-color: #ddd;
+}
+
+.deadline-display.no-deadline {
+    background-color: #f8f9fa;
+    color: #888;
+    border: 1px dashed #ddd;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.deadline-display.no-deadline:hover {
+    background-color: #e0f4e6;
+    color: #00bb06;
+    border-style: solid;
+    border-color: #00bb06;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 187, 6, 0.15);
+}
+
+.deadline-display.today {
+    background-color: #fff3e0;
+    color: #f57c00;
+    font-weight: 600;
+    border-color: #ff9800;
+}
+
+/* ===== TEXT TRUNCATION ===== */
+.category-name {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.category-cell-select select,
+.priority-cell-select select {
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
