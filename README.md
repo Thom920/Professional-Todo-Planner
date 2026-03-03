@@ -28,3 +28,10 @@ p3-startproject-thom/
 ├── config/         # Database configuratie
 └── docs/           # Documentatie
 ```
+
+## 2. Reflectie op AI-gebruik
+
+Voor dit project is AI (zoals Gemini/ChatGPT) gebruikt ter ondersteuning (**vibe-coding**).
+
+### Eigen bijdrage
+Hoewel AI is gebruikt voor de snelheid, is alle code handmatig nagelopen, verbetert, aangepast aan de specifieke projecteisen en voorzien van Nederlands commentaar om de werking uit te leggen.
