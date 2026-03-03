@@ -1,0 +1,124 @@
+/* ===== CSS RESET & BASE STYLES ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+/* ===== CONTAINER & TYPOGRAPHY ===== */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #252525;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+h2 {
+    color: #494949;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+/* ===== GENERAL BUTTON STYLES ===== */
+button {
+    padding: 10px 20px;
+    background-color: #00bb06;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.btn-save {
+    background-color: #00bb06;
+}
+
+.btn-save:hover {
+    background-color: #45a049;
+}
+
+.btn-delete {
+    background-color: #f44336;
+}
+
+.btn-delete:hover {
+    background-color: #da190b;
+}
+
+.btn-cancel {
+    background-color: #757575;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background-color: #616161;
+}
+
+.btn-trash {
+    background-color: transparent;
+    border: 2px solid #e0e0e0;
+    padding: 8px 12px;
+    position: relative;
+    top: 5px;
+}
+
+.btn-trash img {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+.btn-trash:hover {
+    background-color: #f5f5f5;
+    border-color: #d90000;
+}
+
+/* ===== ERROR STYLING ===== */
+.error-message {
+    color: #d90000;
+    font-size: 13px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+input.input-error,
+textarea.input-error {
+    border-color: #d90000 !important;
+}
+
+input.input-error:focus,
+textarea.input-error:focus {
+    border-color: #d90000 !important;
+}
+
+.empty-message {
+    color: #999;
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 16px;
+}
