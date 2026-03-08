@@ -137,7 +137,7 @@ export function updateCategoryList() {
         editBtn.className = 'category-edit-btn';
         editBtn.onclick = () => openEditCategoryModal(category.id, category.name, category.color);
         const editImg = document.createElement('img');
-        editImg.src = '../img/pencil.png';
+        editImg.src = 'img/pencil.png';
         editImg.alt = 'Bewerken';
         editBtn.appendChild(editImg);
 
@@ -145,7 +145,7 @@ export function updateCategoryList() {
         deleteBtn.className = 'category-delete-btn';
         deleteBtn.onclick = () => openDeleteCategoryModal(category.id);
         const deleteImg = document.createElement('img');
-        deleteImg.src = '../img/bin.png';
+        deleteImg.src = 'img/bin.png';
         deleteImg.alt = 'Verwijderen';
         deleteBtn.appendChild(deleteImg);
 
