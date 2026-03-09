@@ -1,17 +1,17 @@
-import { loadTodos, loadCategories, addTodo, addCategory, updateCategory, executeDeleteCategory, executeDelete, updateTodo } from './api.js';
-import { 
-    openModal, 
-    closeModal, 
-    closeDeleteModal, 
-    closeEditCategoryModal, 
+import { loadTodos, loadCategories, addTodo, addCategory, updateCategory, executeDeleteCategory, executeDelete, updateTodo } from './api.js?v=1';
+import {
+    openModal,
+    closeModal,
+    closeDeleteModal,
+    closeEditCategoryModal,
     closeDeleteCategoryModal,
     applySortingAndFiltering,
     loadColumnPreferences,
     saveColumnPreferences,
     toggleColumn,
     deleteTodo
-} from './ui.js';
-import { showError, hideError } from './validation.js';
+} from './ui.js?v=1';
+import { showError, hideError } from './validation.js?v=1';
 
 // ===== GLOBALE VARIABELEN =====
 export const globals = {
@@ -69,7 +69,7 @@ document.getElementById('saveBtn').onclick = function () {
         showError('modalTodoText', 'todoTextError', 'Todo tekst mag niet leeg zijn');
         return;
     }
-    
+
     // Verberg eventuele eerdere errors
     hideError('modalTodoText', 'todoTextError');
 
@@ -78,7 +78,7 @@ document.getElementById('saveBtn').onclick = function () {
 };
 
 // Verberg error message wanneer gebruiker begint te typen in todo text
-document.getElementById('modalTodoText').addEventListener('input', function() {
+document.getElementById('modalTodoText').addEventListener('input', function () {
     hideError('modalTodoText', 'todoTextError');
 });
 
@@ -248,7 +248,7 @@ window.addEventListener('load', function () {
     });
 
     // Verberg error message wanneer gebruiker begint te typen in category name
-    document.getElementById('newCategoryName').addEventListener('input', function() {
+    document.getElementById('newCategoryName').addEventListener('input', function () {
         hideError('newCategoryName', 'categoryAddError');
     });
 
@@ -269,7 +269,7 @@ window.addEventListener('load', function () {
     };
 
     // Verberg error message wanneer gebruiker begint te typen in edit category name
-    document.getElementById('editCategoryName').addEventListener('input', function() {
+    document.getElementById('editCategoryName').addEventListener('input', function () {
         hideError('editCategoryName', 'categoryEditError');
     });
 

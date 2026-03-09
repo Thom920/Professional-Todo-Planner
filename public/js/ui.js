@@ -1,6 +1,6 @@
-import { globals } from './main.js';
-import { toggleTodo, updateTodoPriority, updateTodoTime, updateTodoDeadline, updateTodoCategory, updateTodo } from './api.js';
-import { hideError } from './validation.js';
+import { globals } from './main.js?v=1';
+import { toggleTodo, updateTodoPriority, updateTodoTime, updateTodoDeadline, updateTodoCategory, updateTodo } from './api.js?v=20260308b';
+import { hideError } from './validation.js?v=1';
 
 // ===== HELPER FUNCTIES =====
 // Truncate text met ellipsis
@@ -569,7 +569,7 @@ export function openModal(todo) {
     modalDeadlineContainer.dataset.deadline = todo.deadline || '';
 
     // Toon de deadline netjes geformatteerd
-    updateModalDeadlineDisplay(todo.deadline);
+    updateModalDeadlineDisplay(todo.deadline, modalDeadlineDisplay);
 
     // Maak de deadline klikbaar om te bewerken
     setupModalDeadlineClick();
@@ -589,8 +589,10 @@ export function closeModal() {
 }
 
 // Update hoe de deadline wordt getoond in de modal
-export function updateModalDeadlineDisplay(deadline) {
-    const display = document.getElementById('modalDeadlineDisplay');
+export function updateModalDeadlineDisplay(deadline, displayElement = null) {
+    const display = displayElement || document.getElementById('modalDeadlineDisplay');
+    if (!display) return;
+
     display.className = 'modal-deadline-display';
 
     if (deadline) {
@@ -612,6 +614,7 @@ export function updateModalDeadlineDisplay(deadline) {
 export function setupModalDeadlineClick() {
     const container = document.getElementById('modalDeadlineContainer');
     const display = document.getElementById('modalDeadlineDisplay');
+    if (!container || !display) return;
 
     // Als je op de deadline klikt, toon een datum kiezer
     display.onclick = function () {
@@ -624,9 +627,9 @@ export function setupModalDeadlineClick() {
         // Als er een datum wordt gekozen, sla het op
         input.onchange = function () {
             container.dataset.deadline = input.value;
-            updateModalDeadlineDisplay(input.value);
             container.innerHTML = '';
             container.appendChild(display);
+            updateModalDeadlineDisplay(input.value, display);
             setupModalDeadlineClick();
         };
 
@@ -634,6 +637,7 @@ export function setupModalDeadlineClick() {
         input.onblur = function () {
             container.innerHTML = '';
             container.appendChild(display);
+            updateModalDeadlineDisplay(container.dataset.deadline || '', display);
             setupModalDeadlineClick();
         };
 

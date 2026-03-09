@@ -1,6 +1,6 @@
-import { globals } from './main.js';
-import { showError, hideError } from './validation.js';
-import { updateCategorySelects, applySortingAndFiltering, closeEditCategoryModal, closeModal, closeDeleteModal, closeDeleteCategoryModal } from './ui.js';
+import { globals } from './main.js?v=1';
+import { showError, hideError } from './validation.js?v=1';
+import { updateCategorySelects, applySortingAndFiltering, closeEditCategoryModal, closeModal, closeDeleteModal, closeDeleteCategoryModal } from './ui.js?v=20260308b';
 
 // ===== API COMMUNICATIE =====
 // Haal alle todo's op van de server
@@ -42,10 +42,10 @@ export function addCategory(name, color) {
         showError('newCategoryName', 'categoryAddError', 'Categorie naam is verplicht');
         return;
     }
-    
+
     // Verberg eventuele eerdere errors
     hideError('newCategoryName', 'categoryAddError');
-    
+
     fetch(globals.CATEGORY_API_URL, {
         method: 'POST',
         headers: {
@@ -80,10 +80,10 @@ export function updateCategory(id, name, color) {
         showError('editCategoryName', 'categoryEditError', 'Categorie naam is verplicht');
         return;
     }
-    
+
     // Verberg eventuele eerdere errors
     hideError('editCategoryName', 'categoryEditError');
-    
+
     fetch(globals.CATEGORY_API_URL, {
         method: 'PUT',
         headers: {
